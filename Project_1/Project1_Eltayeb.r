@@ -2,7 +2,10 @@
 
 ########### 1. a) ########### 
 
+
 #load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/Linjär och logistisk regression/computerlabs/Data/weather.rda")
+
 summary(weather)
 head(weather)
 
@@ -134,7 +137,7 @@ plot(x, Y, main = "Rain vs Temperature", xlab = "Temperature", ylab = "Rain")
 (model <- lm(Y ~ x, data = weather)) 
 model_summary <- summary(model)
 
-# Betas (B0 = 37.500 , B1 = 1.301)
+# Betas (B0 = 5.78940 , B1 = 0.09744)
 beta_estimates <- model$coefficients
 B0 <- beta_estimates[1]
 B1 <- beta_estimates[2]
@@ -146,7 +149,7 @@ se_B1 <- model_summary$coefficients[2,2]
 # 95 % confidence intervals
 confInt <- confint(model)
 
-average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3 (mm/C)
+average_start <- B0 + B1*0 # Average at the beginning =  (mm/C)
 
 library(ggplot2)
 
@@ -242,6 +245,28 @@ ggplot(data = rain_pred,
 # Good link for transformations: https://rcompanion.org/handbook/I_12.html
 # Tried sqrt/log/cubic-transformations. The best one is when the residual looks normal distributed.
 
-
-
 ########### 1. d) ########### 
+
+########### 1. e) ########### 
+# See above plots.
+
+########### 1. f) ########### 
+
+# Get confidence and prediction interval for x0 = 5 degrees celsius
+mm_x0 <- data.frame(x = c(5))
+
+(rain_pred_y0 <- cbind(mm_x0,
+                     pred = predict(model, mm_x0,
+                                    interval = "prediction")))
+
+# Prediction interval for year 2015 and 2020:
+(Pb_y0_log_pred <- cbind(Pb_x0,
+                         predlog = predict(Pb_mossa_logmod, Pb_x0,
+                                           interval = "prediction")))
+# 2015 Prediction interval: (-1.25, 0.98)
+# 2020 Prediction interval: (-1.65, 0.58)
+
+(Pb_y0_trans_pred <- cbind(Pb_x0, 
+                           predtrans = exp(predict(Pb_mossa_logmod, Pb_x0,
+                                           interval = "prediction"))))
+
