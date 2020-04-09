@@ -4,7 +4,7 @@
 
 
 #load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/Linjär och logistisk regression/computerlabs/Data/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -126,8 +126,8 @@ ggplot(data = rain_pred,
 ########### 1. b) ########### 
 
 rm(list=ls())
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/Linjär och logistisk regression/computerlabs/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 x <- weather$temp # Temperature
 Y <- (weather$rain)^(1/2) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -259,14 +259,61 @@ mm_x0 <- data.frame(x = c(5))
                      pred = predict(model, mm_x0,
                                     interval = "prediction")))
 
-# Prediction interval for year 2015 and 2020:
-(Pb_y0_log_pred <- cbind(Pb_x0,
-                         predlog = predict(Pb_mossa_logmod, Pb_x0,
-                                           interval = "prediction")))
-# 2015 Prediction interval: (-1.25, 0.98)
-# 2020 Prediction interval: (-1.65, 0.58)
+#install.packages("plotly")
 
-(Pb_y0_trans_pred <- cbind(Pb_x0, 
-                           predtrans = exp(predict(Pb_mossa_logmod, Pb_x0,
-                                           interval = "prediction"))))
+# 2 b)
 
+library(plotly)
+
+fig <- plot_ly(weather, x = ~temp, y = ~rain, z = ~pressure,
+               marker = list(color = ~mpg, colorscale = c('#FFE1A1', '#683531','#683531'), showscale = FALSE))
+fig <- fig %>% add_markers()
+fig <- fig %>% layout(scene = list(xaxis = list(title = 'Temperature'),
+                                   yaxis = list(title = 'Precipitation'),
+                                   zaxis = list(title = 'Pressure'))
+                     )
+fig
+
+# Pressure vs Precipitation
+ggplot(data = weather, 
+       aes(x = pressure, y = rain)) +
+  geom_point(size = 3) +
+  expand_limits(y = rain_elims) +
+  xlab("Pressure") +
+  ylab("Precipitation") +
+  labs(title = "Pressure vs Precipitation") +
+  theme(text = element_text(size = 18))
+
+# Pressure vs Temperature
+ggplot(data = weather, 
+       aes(x = pressure, y = temp)) +
+  geom_point(size = 3) +
+  expand_limits(y = rain_elims) +
+  xlab("Pressure") +
+  ylab("Temperature") +
+  labs(title = "Pressure vs Temperature") +
+  theme(text = element_text(size = 18))
+
+# 2 c)
+
+# Fitting a linear regression model
+(model.mult <- lm(rain ~ temp+pressure, data = weather)) 
+model.mult_sum <- summary(model.mult)
+
+# Betas (B0 =  , B1 = )
+beta_estimates <- model.mult_sum$coefficients
+B0 <- beta_estimates[1]
+B1 <- beta_estimates[2]
+
+# Estimation of standard deviation
+se_B0 <- model.mult_sum$coefficients[1,2]
+se_B1 <- model.mult_sum$coefficients[2,2]
+
+# 95 % confidence intervals
+confInt <- confint(model.mult)
+
+average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3 (mm/C)
+
+confInt # All the Betas are signifcantly different from 0 and are therefore needed.
+
+# 2 d)
