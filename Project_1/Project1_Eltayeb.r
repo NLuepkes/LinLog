@@ -2,7 +2,7 @@
 
 ########### 1. a) ########### 
 
-# load("Data/weather.rda") ...Does not work for some reason...
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
 summary(weather)
 head(weather)
 
@@ -123,8 +123,8 @@ ggplot(data = rain_pred,
 ########### 1. b) ########### 
 
 rm(list=ls())
-
-load("~/Desktop/Linjär och logistisk regression/computerlabs/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/Linjär och logistisk regression/computerlabs/Data/weather.rda")
 x <- weather$temp # Temperature
 Y <- (weather$rain)^(1/2) # Rain, but now log-transformed because it looked like an exp-increase.
 
