@@ -424,3 +424,4 @@ log_confInt <- exp(confInt)
 # Average precipitation change by increasing with 1 degree.
 a * b^1
 
+## 2 f) Change the b-variable to different beta and see how line 425 changes output.
