@@ -1,10 +1,10 @@
 # Project 1
 
-########### 1. a) ########### 
+#### 1 a) #### 
 
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -79,7 +79,7 @@ head(weather)
 # Does it look reasonable? 
 # Not really, large confidence-and prediction-intervals
 
-#### Basic residual analysis ####
+#### Basic residual analysis, 1 a) ####
 
 # Add the residuals to the predicted data. 
 rain_pred$e <- model$residuals
@@ -123,10 +123,7 @@ ggplot(data = rain_pred,
 # Not a good model because it does not look gaussian.
 
 
-########### 1. b) ########### 
-
-
-###############################################################################
+#### 1 b) #### 
 
 rm(list=ls())
 #load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
@@ -200,7 +197,7 @@ head(weather)
 # Does it look reasonable? 
 # Not really, large confidence-and prediction-intervals
 
-#### Basic residual analysis ####
+#### Basic residual analysis, 1 b) ####
 
 # Add the residuals to the predicted data. 
 rain_pred$e <- model$residuals
@@ -241,19 +238,34 @@ ggplot(data = rain_pred,
   labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
 
+## Conclusion for 1 b): Better but not as good as we would want.
 
-########### 1. c) ########### 
+
+#### 1 c) #### 
 
 # Discussion part, use histograms, QQ-plot to argue why it was good/bad!
 # Good link for transformations: https://rcompanion.org/handbook/I_12.html
 # Tried sqrt/log/cubic-transformations. The best one is when the residual looks normal distributed.
 
-########### 1. d) ########### 
+#### 1 d) #### 
 
-########### 1. e) ########### 
+# Level of rain over temp + pressure
+# y = B0 + B1 * x + epsilon <-> log(Y) = B0 + B1 * x + epsilon
+# Transformation -> Y = exp(B0) * exp(B1)^x * exp(epsilon) = a * b^x * exp(epsilon),
+# where a = exp(B0) and b = exp(B1)
+
+# Estimates of a and b
+# beta_estimates <- model.mult_sum$coefficients
+
+a <- exp(beta_estimates[1]) # a = 1.041
+b <- exp(beta_estimates[2]) # b = 0.943
+
+confint(a*b^5)
+
+#### 1 e) #### 
 # See above plots.
 
-########### 1. f) ########### 
+#### 1 f) #### 
 
 # Get confidence and prediction interval for x0 = 5 degrees celsius
 mm_x0 <- data.frame(x = c(5))
@@ -262,23 +274,59 @@ mm_x0 <- data.frame(x = c(5))
                      pred = predict(model, mm_x0,
                                     interval = "prediction")))
 
-###############################################################################
+#### Section 2 ####
 
 rm(list=ls())
 
 #load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
 load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
-# 2a)
-# summray for p value
+#### 2 a) ####
+
+# summary(model), look at p-value. Should be smaller than 0.05.
 
 
-# 2 b)
+#### 2 b) ####
+
+## Plotting temp vs rain, temp vs pressure, rain vs pressure
+
 # create three plots
 # with the log, it looks better, but still not perfect
+library(ggplot2)
+
+# temp vs rain
+ggplot(data = weather, 
+       aes(x = temp, y = rain)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0) +
+  xlab("Temperature") +
+  ylab("Rain") +
+  labs(title = "Temperature vs rain") +
+  theme(text = element_text(size = 18))
+
+# temp vs pressure
+ggplot(data = weather, 
+       aes(x = temp, y = pressure)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0) +
+  ylim(980,1040) +
+  xlab("Temperature") +
+  ylab("Pressure") +
+  labs(title = "Temperature vs pressure") +
+  theme(text = element_text(size = 18))
+
+# pressure vs rain
+ggplot(data = weather, 
+       aes(x = pressure, y = log(rain))) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0) +
+  xlab("Pressure") +
+  ylab("Rain") +
+  labs(title = "Pressure vs rain") +
+  theme(text = element_text(size = 18))
 
 
-# 2 c)
+#### 2 c) ####
 
 # Fitting a linear regression model
 (model.mult <- lm(log(rain) ~ temp + pressure, data = weather)) 
@@ -301,13 +349,13 @@ average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3 (mm/C)
 confInt # All the Betas are signifcantly different from 0 and are therefore needed.
 
 
-# 2 d) 
+#### 2 d) ####
 
 rain_pred <- 
   cbind(weather, 
         pred = predict(model.mult, interval = "prediction"))
 
-########## Basic residual analysis ##########
+#### Basic residual analysis, 2 d) #### 
 
 # Add the residuals to the predicted data. 
 rain_pred$e <- model.mult$residuals
@@ -397,7 +445,7 @@ ggplot(data = rain_pred,
 # 
 # ##
 
-## 2 e)
+#### 2 e) ####
 
 
 # Level of rain over temp + pressure
@@ -407,13 +455,210 @@ ggplot(data = rain_pred,
 
 # Estimates of a and b
 beta_estimates <- model.mult_sum$coefficients
-a <- exp(beta_estimates[2]) # a = 1.041
-b <- exp(beta_estimates[3]) # b = 0.943
+a <- exp(beta_estimates[1]) # Intercept
+a2 <- exp(beta_estimates[2]) # Temp in this case
+a3 <- exp(beta_estimates[3]) # Pressure in this case
 
 # 95% confidence intervals
-log_confInt <- exp(confInt)
+ log_confInt <- exp(confInt)
+# nope. This is wrong. We want the prediction interval.
+rain_pred
 
 # Average precipitation change by increasing with 1 degree.
-a * b^1
+# change does not care about 'a' since 'a' is a constant. 
+ a2^1 
+# 1.04 => increase by 4% 
 
-## 2 f) Change the b-variable to different beta and see how line 425 changes output.
+#### 2 f) Change the b-variable to different beta and see how line 425 changes output. ####
+a3^20
+# 0.31 => decrease by 31%
+
+#### 2.3 Temperature and pressure with interaction #####
+
+rm(list=ls())
+
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+
+#### 2 h) ####
+
+# Fitting a linear regression model
+(model.mult <- lm(log(rain) ~ temp * pressure, data = weather)) 
+sum_mult <- summary(model.mult)
+
+beta_estimates <- sum_mult$coefficients
+
+confint(model.mult)
+
+#### 2 i) ####
+# Ask Anna, what is that is given by the hint that would answer the question?
+# we compare model.mult1 and model.mult2. The parameters change drastically.
+
+(model.mult1 <- lm(log(rain) ~ temp * pressure, data = weather))
+
+(model.mult2 <- lm(log(rain) ~ temp * I(pressure - 1012), data = weather)) 
+(model.plus <- lm(log(rain) ~ temp + I(pressure - 1012), data = weather)) 
+
+beta_estimates <- sum_mult$coefficients
+
+confint(model.mult)
+confint(model.plus)
+
+summary(model.mult)
+
+#### 2 j) ####
+
+rain_pred <- 
+  cbind(weather, 
+        pred = predict(model.mult, interval = "prediction"))
+
+#### Basic residual analysis, 2 j) ####
+
+# Why does it feel like something is missing?
+# We are not. I showed Anna our plots and she said it doesn't get better much. So no worries.
+
+# Add the residuals to the predicted data. 
+rain_pred$e <- model.mult$residuals
+head(rain_pred)
+
+# Save the max-value in order to make the y-axis symmetrical in the plots.
+(max.e <- max(abs(rain_pred$e)))
+(rain_elims <- c(-max.e, max.e))
+
+# Plot residuals against yhat, add a horizontal line at y=0,
+# and expand the y-axis to include +/- max residual.
+
+ggplot(data = rain_pred, 
+       aes(x = pred.fit, y = e)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = rain_elims) +
+  xlab("Predicted amount of rain") +
+  ylab("Residual") +
+  labs(tag = "B") +
+  labs(title = "Residuals vs predicted values Y-hat") +
+  theme(text = element_text(size = 18))
+
+# Make a normal QQ-plot of residuals.
+ggplot(data = rain_pred, 
+       aes(sample = e)) +
+  geom_qq(size = 3) +
+  geom_qq_line() +
+  labs(tag = "C") +
+  labs(title = "Normal QQ-plot of residuals") +
+  theme(text = element_text(size = 18))
+
+# Histogram of the residuals:
+ggplot(data = rain_pred,
+       aes(x = e)) +
+  geom_histogram(bins = 20) +
+  xlab("Residuals") +
+  labs(title = "Histogram of residuals") +
+  theme(text = element_text(size = 18))
+
+
+#### 2.4 Temperature, pressure and location #### 
+
+####  2 m) + n) #### 
+rm(list=ls())
+
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+
+summary(weather)
+# Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
+weather$location <- relevel(weather$location, "Uppsala")
+
+(model.mult_loc <- lm(log(rain) ~ temp * pressure + location, data = weather)) 
+(testmodel <- lm(log(rain) ~ temp * pressure, data = weather)) 
+sum_mult_loc <- summary(model.mult_loc)
+sum_testmodel <- summary(testmodel)
+
+beta_estimates <- sum_mult_loc$coefficients
+
+confint(model.mult_loc)
+confint(testmodel)
+# Test of our choice.
+anova(model.mult_loc, testmodel)
+
+#### 2 o) ####
+# we just look at the values and compare them. no need for fancy tests. 
+
+#### Basic residual analysis, 2 p) ####
+
+library(ggplot2)
+
+pred_multiloc <- 
+  cbind(weather,
+        conf = predict(model.mult_loc, interval = "confidence"),
+        pred = predict(model.mult_loc, interval = "prediction"),
+        e = residuals(model.mult_loc))
+head(pred_multiloc)
+
+
+elim <- max(abs(pred_multiloc$e)) * c(-1, 1)
+ggplot(pred_multiloc, aes(x = conf.fit, y = e, color = location)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = elim) +
+  facet_wrap(~ location)
+
+ggplot(pred_multiloc, aes(x =  temp * pressure, y = e, color = location)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = elim) +
+  facet_wrap(~ location)
+
+ggplot(pred_multiloc, aes(sample = e)) +
+  geom_qq() + geom_qq_line() +
+  expand_limits(y = elim)
+
+
+# Save the max-value in order to make the y-axis symmetrical in the plots.
+(max.e <- max(abs(pred_multiloc$e)))
+(rain_elims <- c(-max.e, max.e))
+
+# Plot residuals against yhat, add a horizontal line at y=0,
+# and expand the y-axis to include +/- max residual.
+
+ggplot(data = pred_multiloc, 
+       aes(x = pred.fit, y = e)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = rain_elims) +
+  xlab("Predicted amount of rain") +
+  ylab("Residual") +
+  labs(tag = "B") +
+  labs(title = "Residuals vs predicted values Y-hat") +
+  theme(text = element_text(size = 18))
+
+# Make a normal QQ-plot of residuals.
+ggplot(data = pred_multiloc, 
+       aes(sample = e)) +
+  geom_qq(size = 3) +
+  geom_qq_line() +
+  labs(tag = "C") +
+  labs(title = "Normal QQ-plot of residuals") +
+  theme(text = element_text(size = 18))
+
+# Histogram of the residuals:
+ggplot(data = pred_multiloc,
+       aes(x = e)) +
+  geom_histogram(bins = 20) +
+  xlab("Residuals") +
+  labs(title = "Histogram of residuals") +
+  theme(text = element_text(size = 18))
+
+#### 2 q) ####
+
+weather$location <- relevel(weather$location, "Uppsala")
+ggplot(weather, aes(x = I(pressure - 1012)*temp, y = rain, color = location)) +
+  geom_point() +
+  facet_wrap(~ location)
+ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location)) +
+  geom_point() +
+  facet_wrap(~ location)
+
+# Based on one value, Lund (southern Sweden likes rain....)
+# Uppsala is a close contender to being shit as well, but Skane ftw.
+
