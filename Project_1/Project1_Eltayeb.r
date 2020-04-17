@@ -269,21 +269,13 @@ rm(list=ls())
 #load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
 load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
+# 2a)
+# summray for p value
 
-#install.packages("plotly")
 
 # 2 b)
-
-library(plotly)
-
-fig <- plot_ly(weather, x = ~temp, y = ~rain, z = ~pressure,
-               marker = list(color = ~mpg, colorscale = c('#FFE1A1', '#683531','#683531'), showscale = FALSE))
-fig <- fig %>% add_markers()
-fig <- fig %>% layout(scene = list(xaxis = list(title = 'Temperature'),
-                                   yaxis = list(title = 'Precipitation'),
-                                   zaxis = list(title = 'Pressure'))
-                     )
-fig
+# create three plots
+# with the log, it looks better, but still not perfect
 
 
 # 2 c)
