@@ -650,3 +650,9 @@ ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location
 # Based on one value, Lund (southern Sweden likes rain....)
 # Uppsala is a close contender to being shit as well, but Skane ftw.
 
+
+
+#### 3 Precipitation — which variables are needed? ####
+
+#### 3.1 Outliers and influential observations ####
+
