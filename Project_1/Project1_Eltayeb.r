@@ -3,7 +3,7 @@
 #### 1 a) #### 
 
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
 #load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
@@ -126,8 +126,8 @@ ggplot(data = rain_pred,
 #### 1 b) #### 
 
 rm(list=ls())
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -278,8 +278,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -562,8 +562,8 @@ ggplot(data = rain_pred,
 ####  2 m) + n) #### 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 # Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
@@ -662,3 +662,35 @@ ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location
 # Based on one value, Lund (southern Sweden likes rain....)
 # Uppsala is a close contender to being shit as well, but Skane ftw.
 
+#### Section 3 ####
+#### 3 a) ####
+model.2n <- model.mult_loc
+(pplus1.2n <- length(model.2n$coefficients))
+# n = number of observations
+(n <- nrow(weather))
+
+# save data, fitted values and leverage:
+w.diagnostics <-
+  cbind(weather,
+        fit = predict(model.2n),
+        v = influence(model.2n)$hat)
+head(w.diagnostics)
+
+ggplot(w.diagnostics, aes(x = temp, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+  
+ggplot(w.diagnostics, aes(x = pressure, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+# Uppsala has the most observations. For small data sets, individual points have a higher influence, so Lund und Abisko have higher leverages. 
+
+#### 3 b) ####
