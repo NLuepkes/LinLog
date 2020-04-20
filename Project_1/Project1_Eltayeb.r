@@ -31,7 +31,8 @@ se_B1 <- model_summary$coefficients[2,2]
 # 95 % confidence intervals
 confInt <- confint(model)
 
-average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3 (mm/C)
+average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3011 (mm/C)
+# => increase by 30%
 
 library(ggplot2)
 
@@ -694,3 +695,4 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
 # Uppsala has the most observations. For small data sets, individual points have a higher influence, so Lund und Abisko have higher leverages. 
 
 #### 3 b) ####
+I_high <- which(w.diagnostics$v > 0.026)
