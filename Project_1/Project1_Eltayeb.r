@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -31,7 +31,8 @@ se_B1 <- model_summary$coefficients[2,2]
 # 95 % confidence intervals
 confInt <- confint(model)
 
-average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3 (mm/C)
+average_start <- B0 + B1*0 # Average at the beginning = 37.500 + 1.3011 (mm/C)
+# => increase by 30%
 
 library(ggplot2)
 
@@ -126,8 +127,8 @@ ggplot(data = rain_pred,
 #### 1 b) #### 
 
 rm(list=ls())
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -278,20 +279,20 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
 # summary(model), look at p-value. Should be smaller than 0.05.
 
 
-#install.packages("plotly")
-
 #### 2 b) ####
 
 ## Plotting temp vs rain, temp vs pressure, rain vs pressure
 
+# create three plots
+# with the log, it looks better, but still not perfect
 library(ggplot2)
 
 # temp vs rain
@@ -460,13 +461,18 @@ a2 <- exp(beta_estimates[2]) # Temp in this case
 a3 <- exp(beta_estimates[3]) # Pressure in this case
 
 # 95% confidence intervals
-log_confInt <- exp(confInt)
+ log_confInt <- exp(confInt)
+# nope. This is wrong. We want the prediction interval.
+rain_pred
 
 # Average precipitation change by increasing with 1 degree.
-a * a2^1
+# change does not care about 'a' since 'a' is a constant. 
+ a2^1 
+# 1.04 => increase by 4% 
 
 #### 2 f) Change the b-variable to different beta and see how line 425 changes output. ####
-a * a3^20
+a3^20
+# 0.31 => decrease by 31%
 
 #### 2.3 Temperature and pressure with interaction #####
 
@@ -487,14 +493,17 @@ confint(model.mult)
 
 #### 2 i) ####
 # Ask Anna, what is that is given by the hint that would answer the question?
+# we compare model.mult1 and model.mult2. The parameters change drastically.
 
-(model.mult <- lm(log(rain) ~ temp * I(pressure - 1012), data = weather)) 
-(modelplus <- lm(log(rain) ~ temp + I(pressure - 1012), data = weather)) 
+(model.mult1 <- lm(log(rain) ~ temp * pressure, data = weather))
+
+(model.mult2 <- lm(log(rain) ~ temp * I(pressure - 1012), data = weather)) 
+(model.plus <- lm(log(rain) ~ temp + I(pressure - 1012), data = weather)) 
 
 beta_estimates <- sum_mult$coefficients
 
 confint(model.mult)
-confint(modelplus)
+confint(model.plus)
 
 summary(model.mult)
 
@@ -507,6 +516,7 @@ rain_pred <-
 #### Basic residual analysis, 2 j) ####
 
 # Why does it feel like something is missing?
+# We are not. I showed Anna our plots and she said it doesn't get better much. So no worries.
 
 # Add the residuals to the predicted data. 
 rain_pred$e <- model.mult$residuals
@@ -553,8 +563,8 @@ ggplot(data = rain_pred,
 ####  2 m) + n) #### 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 # Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
@@ -571,6 +581,9 @@ confint(model.mult_loc)
 confint(testmodel)
 # Test of our choice.
 anova(model.mult_loc, testmodel)
+
+#### 2 o) ####
+# we just look at the values and compare them. no need for fancy tests. 
 
 #### Basic residual analysis, 2 p) ####
 
@@ -650,9 +663,45 @@ ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location
 # Based on one value, Lund (southern Sweden likes rain....)
 # Uppsala is a close contender to being shit as well, but Skane ftw.
 
+<<<<<<< HEAD
 
 
 #### 3 Precipitation — which variables are needed? ####
 
 #### 3.1 Outliers and influential observations ####
 
+=======
+#### Section 3 ####
+#### 3 a) ####
+model.2n <- model.mult_loc
+(pplus1.2n <- length(model.2n$coefficients))
+# n = number of observations
+(n <- nrow(weather))
+
+# save data, fitted values and leverage:
+w.diagnostics <-
+  cbind(weather,
+        fit = predict(model.2n),
+        v = influence(model.2n)$hat)
+head(w.diagnostics)
+
+ggplot(w.diagnostics, aes(x = temp, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+  
+ggplot(w.diagnostics, aes(x = pressure, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+# Uppsala has the most observations. For small data sets, individual points have a higher influence, so Lund und Abisko have higher leverages. 
+
+#### 3 b) ####
+I_high <- which(w.diagnostics$v > 0.026)
+>>>>>>> b68993a3cdbb9ec0e8eef341d90a8e5672a85447
