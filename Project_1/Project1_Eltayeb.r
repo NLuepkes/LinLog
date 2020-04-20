@@ -558,6 +558,13 @@ ggplot(data = rain_pred,
   theme(text = element_text(size = 18))
 
 
+
+#### 2 k) #### 
+# TODO
+
+#### 2 l) #### 
+# TODO
+
 #### 2.4 Temperature, pressure and location #### 
 
 ####  2 m) + n) #### 
@@ -670,7 +677,7 @@ ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location
 
 #### 3.1 Outliers and influential observations ####
 
-=======
+
 #### Section 3 ####
 #### 3 a) ####
 model.2n <- model.mult_loc
@@ -704,4 +711,3 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
 
 #### 3 b) ####
 I_high <- which(w.diagnostics$v > 0.026)
->>>>>>> b68993a3cdbb9ec0e8eef341d90a8e5672a85447
