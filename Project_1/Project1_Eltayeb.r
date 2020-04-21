@@ -261,7 +261,7 @@ ggplot(data = rain_pred,
 a <- exp(beta_estimates[1]) # a = 1.041
 b <- exp(beta_estimates[2]) # b = 0.943
 
-confint(a*b^5)
+#confint(a*b^5)
 
 #### 1 e) #### 
 # See above plots.
@@ -394,7 +394,7 @@ ggplot(data = weather,
 
 ## Temp vs resid
 ggplot(data = weather, 
-       aes(x = temperature, y = rain_pred$e)) +
+       aes(x = temp, y = rain_pred$e)) +
   geom_point(size = 3) +
   geom_hline(yintercept = 0) +
   expand_limits(y = rain_elims) +
@@ -472,14 +472,14 @@ rain_pred
 
 #### 2 f) Change the b-variable to different beta and see how line 425 changes output. ####
 a3^20
-# 0.31 => decrease by 31%
+# 0.31 => decrease by 69%
 
 #### 2.3 Temperature and pressure with interaction #####
 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 h) ####
 
@@ -670,8 +670,6 @@ ggplot(weather, aes(x = I(pressure - 1012)*temp, y = log(rain), color = location
 # Based on one value, Lund (southern Sweden likes rain....)
 # Uppsala is a close contender to being shit as well, but Skane ftw.
 
-<<<<<<< HEAD
-
 
 #### 3 Precipitation — which variables are needed? ####
 
@@ -696,6 +694,7 @@ ggplot(w.diagnostics, aes(x = temp, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 0.026) +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
@@ -704,6 +703,7 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 0.026) +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
@@ -711,3 +711,55 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
 
 #### 3 b) ####
 I_high <- which(w.diagnostics$v > 0.026)
+
+ggplot(weather, aes(temp, pressure)) +
+geom_point() +
+geom_point(data = weather[I_high, ], color = "red",
+shape = 24, size = 3) +
+facet_wrap(~ location)
+
+# Abisko is a lot more north, so the pressure vs. temp model maybe doesn't capture that behaviour
+
+#### 3 c) ####
+w.diagnostics$r <- rstudent(model.2n)
+head(w.diagnostics)
+ggplot(w.diagnostics, aes(x = temp, y = r)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_point(data = weather[I_high, ], color = "red",
+shape = 24, size = 3) +
+  geom_hline(yintercept = c(-2, 2), color = "red",
+             linetype = "dashed", size = 1) +
+  geom_hline(yintercept = c(-4, 4), color = "red",
+             linetype = "dotted", size = 1) +
+  facet_wrap(~ location)
+#### 3d) ####
+# TODO 
+
+#### 3e) ####
+w.diagnostics$D <- cooks.distance(model.2n)
+head(w.diagnostics)
+
+ggplot(w.diagnostics, aes(x = pressure, y = D)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 4/n, color = "red",
+             linetype = "dotted", size = 1) +
+  facet_wrap(~ location) +
+  geom_point(data = w.diagnostics[I_high, ], 
+             color = "red")
+# still need to highlight the outliers from 3d)
+# then we can comment on the questions
+
+I_low <- which(weather$pressure != I_high)
+# I_low doesn't work. Why not?
+ggplot(weather, aes(temp, pressure)) +
+geom_point() +
+geom_point(data = weather[I_high, ], color = "red",
+shape = 24, size = 3) +
+facet_wrap(~ location)
+ggplot(weather, aes(temp, pressure)) +
+geom_point() +
+geom_point(data = weather[I_low, ], color = "red",
+shape = 24, size = 3) +
+facet_wrap(~ location)
