@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -127,8 +127,8 @@ ggplot(data = rain_pred,
 #### 1 b) #### 
 
 rm(list=ls())
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -191,8 +191,7 @@ head(weather)
     geom_line(data = rain_pred, aes(y = pred.lwr),
               color = "red", linetype = "dashed", size = 1) +
     geom_line(data = rain_pred, aes(y = pred.upr),
-              color = "red", linetype = "dashed", size = 1) +
-    labs(caption = "95% confidence and prediction intervals for fitted line in weather data")
+              color = "red", linetype = "dashed", size = 1)
 )
 
 # Does it look reasonable? 
@@ -256,12 +255,12 @@ ggplot(data = rain_pred,
 # where a = exp(B0) and b = exp(B1)
 
 # Estimates of a and b
-# beta_estimates <- model.mult_sum$coefficients
+#beta_estimates <- model.mult_sum$coefficients
 
 a <- exp(beta_estimates[1]) # a = 1.041
 b <- exp(beta_estimates[2]) # b = 0.943
 
-#confint(a*b^5)
+a*b^1
 
 #### 1 e) #### 
 # See above plots.
@@ -279,8 +278,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -301,8 +300,7 @@ ggplot(data = weather,
   geom_point(size = 3) +
   geom_hline(yintercept = 0) +
   xlab("Temperature") +
-  ylab("Rain") +
-  labs(title = "Temperature vs rain") +
+  ylab("Rain")
   theme(text = element_text(size = 18))
 
 # temp vs pressure
@@ -312,8 +310,7 @@ ggplot(data = weather,
   geom_hline(yintercept = 0) +
   ylim(980,1040) +
   xlab("Temperature") +
-  ylab("Pressure") +
-  labs(title = "Temperature vs pressure") +
+  ylab("Pressure")
   theme(text = element_text(size = 18))
 
 # pressure vs rain
@@ -322,8 +319,7 @@ ggplot(data = weather,
   geom_point(size = 3) +
   geom_hline(yintercept = 0) +
   xlab("Pressure") +
-  ylab("Rain") +
-  labs(title = "Pressure vs rain") +
+  ylab("Rain")
   theme(text = element_text(size = 18))
 
 
