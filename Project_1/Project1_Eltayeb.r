@@ -127,8 +127,10 @@ ggplot(data = rain_pred,
 #### 1 b) #### 
 
 rm(list=ls())
+
 #load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
 load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -474,8 +476,8 @@ a3^20
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 h) ####
 
@@ -566,8 +568,8 @@ ggplot(data = rain_pred,
 ####  2 m) + n) #### 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 # Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
@@ -598,7 +600,6 @@ pred_multiloc <-
         pred = predict(model.mult_loc, interval = "prediction"),
         e = residuals(model.mult_loc))
 head(pred_multiloc)
-
 
 elim <- max(abs(pred_multiloc$e)) * c(-1, 1)
 ggplot(pred_multiloc, aes(x = conf.fit, y = e, color = location)) +
@@ -686,7 +687,7 @@ w.diagnostics <-
         v = influence(model.2n)$hat)
 head(w.diagnostics)
 
-ggplot(w.diagnostics, aes(x = temp, y = v)) +
+ggplot(w.diagnostics, aes(x = fit, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
@@ -717,20 +718,48 @@ facet_wrap(~ location)
 # Abisko is a lot more north, so the pressure vs. temp model maybe doesn't capture that behaviour
 
 #### 3 c) ####
-w.diagnostics$r <- rstudent(model.2n)
-head(w.diagnostics)
-ggplot(w.diagnostics, aes(x = temp, y = r)) +
-  geom_point() +
+
+# Add studentized residuals
+tmp.pred <- cbind(weather, 
+                  fit = predict(model.2n),
+                  e = residuals(model.2n))
+
+tmp.pred$r <- rstudent(model.2n)
+head(tmp.pred)
+
+ggplot(tmp.pred, aes(x = fit, y = r)) +
+  geom_jitter(width = 1) +
   geom_hline(yintercept = 0) +
-  geom_point(data = weather[I_high, ], color = "red",
-shape = 24, size = 3) +
-  geom_hline(yintercept = c(-2, 2), color = "red",
-             linetype = "dashed", size = 1) +
-  geom_hline(yintercept = c(-4, 4), color = "red",
-             linetype = "dotted", size = 1) +
-  facet_wrap(~ location)
+  geom_hline(yintercept = c(-2, 2), color = "red") +
+  geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
+  facet_wrap(~ location) +
+  xlab("Fitted values") +
+  ylab("r*") +
+  # labs(title = "Weather: studentized residuals vs fitted values") +
+  labs(caption = "y = +/- 2 and +/- 4") +
+  theme(text = element_text(size = 18))
+# # Conclusion: No problematic studentized residuals for Abisko,
+# but 1 for Uppsala and maybe 1 for Lund.
+
 #### 3d) ####
 # TODO 
+
+# Plot of the "outliers" in terms of leverages
+ggplot(weather, aes(log(rain), pressure)) +
+  geom_point() +
+  geom_point(data = weather[I_high, ], color = "red",
+             shape = 24, size = 3) +
+  facet_wrap(~ location)
+
+ggplot(weather, aes(log(rain), temp)) +
+  geom_point() +
+  geom_point(data = weather[I_high, ], color = "red",
+             shape = 24, size = 3) +
+  facet_wrap(~ location)
+
+# We need to add something to I_high vector, to encircle the high studentized
+# residuals as well as leverages.
+
 
 #### 3e) ####
 w.diagnostics$D <- cooks.distance(model.2n)
@@ -747,15 +776,34 @@ ggplot(w.diagnostics, aes(x = pressure, y = D)) +
 # still need to highlight the outliers from 3d)
 # then we can comment on the questions
 
-I_low <- which(weather$pressure != I_high)
+
+I_low <- c(I_high)
+
 # I_low doesn't work. Why not?
-ggplot(weather, aes(temp, pressure)) +
+
+ggplot(weather[-I_high ], aes(x = temp, y = pressure)) +
 geom_point() +
-geom_point(data = weather[I_high, ], color = "red",
+geom_point(data = weather, color = "red",
 shape = 24, size = 3) +
 facet_wrap(~ location)
-ggplot(weather, aes(temp, pressure)) +
-geom_point() +
-geom_point(data = weather[I_low, ], color = "red",
-shape = 24, size = 3) +
-facet_wrap(~ location)
+
+#### 3f) ####
+# TODO
+
+
+#### 3.2 Model comparisons ####
+
+#### 3 g) ####
+# TODO
+
+#### 3 h) ####
+# TODO
+
+#### 3 i) ####
+# TODO
+
+#### 3 j) ####
+# TODO
+
+#### 3 k) ####
+# TODO
