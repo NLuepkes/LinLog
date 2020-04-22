@@ -836,16 +836,82 @@ ggplot(w2.diagnostics, aes(x = pressure, y = D)) +
 #### 3.2 Model comparisons ####
 
 #### 3 g) ####
-# TODO
+
+# Model from 1 b)
+(modelsec3_1b <- lm(rain ~ temp, data = Exweather))
+sum.modelsec3_1b <- summary(modelsec3_1b)
+
+# Model from 2 c)
+(modelsec3_2c <- lm(log(rain) ~ temp + pressure, data = Exweather)) 
+sum.modelsec3_2c <- summary(modelsec3_2c)
+
+
+# Model from 2 h)
+(modelsec3_2h <- lm(log(rain) ~ temp * pressure, data = Exweather)) 
+sum.modelsec3_2h <- summary(modelsec3_2h)
+
+
+#### R^2 and R^2_adj ####
+(collect.R2s <- data.frame(
+  nr = seq(1, 4),
+  model = c("rain vs temp", "log(rain) vs temp+pressure",  
+            "log(rain) vs temp*pressure", "log(rain) vs temp*pressure+location"),
+  R2 = c(sum.modelsec3_1b$r.squared,
+         sum.modelsec3_2c$r.squared,
+         sum.modelsec3_2h$r.squared,
+         sum_modelX$r.squared),
+  R2.adj = c(sum.modelsec3_1b$adj.r.squared,
+             sum.modelsec3_2c$adj.r.squared,
+             sum.modelsec3_2h$adj.r.squared,
+             sum_modelX$adj.r.squared)))
+
+
+#### AIC and BIC ####
+(collect.AIC <- data.frame(
+  nr = seq(1, 4),
+  model = c("rain vs temp", "log(rain) vs temp+pressure",  
+            "log(rain) vs temp*pressure", "log(rain) vs temp*pressure+location"),
+  AIC( modelsec3_1b, modelsec3_2c, modelsec3_2h, modelX),
+  BIC( modelsec3_1b, modelsec3_2c, modelsec3_2h, modelX)))
+
 
 #### 3 h) ####
-# TODO
+
+(modelX_2 <- lm(log(rain) ~ temp * pressure * location, data = Exweather)) 
+
+sum_modelX_2 <- summary(modelX_2)
+
+beta_estimates <- sum_modelX_2$coefficients
+
+confint(modelX_2)
+sum_modelX_2
+
+anova(modelX_2,modelX)
+
+AIC(modelX_2,modelX)
+BIC(modelX_2,modelX)
+
+# Conclusion: Not suitable to substitute temp * pressure + location
+# with temp * pressure * location.
 
 #### 3 i) ####
-# TODO
+# How do you remove variables, one by one without refitting the entire model?
 
 #### 3 j) ####
 # TODO
 
 #### 3 k) ####
-# TODO
+# Adding another categorical variable, season.
+
+Exweather$season <- "summer" 
+Exweather$season[Exweather$monthnr == 3 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 4 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 5 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 12 ] <- "winter"
+Exweather$season[Exweather$monthnr == 1 ] <- "winter"
+Exweather$season[Exweather$monthnr == 2 ] <- "winter"
+Exweather$season[Exweather$monthnr == 9 ] <- "autumn"
+Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
+Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
+
+
