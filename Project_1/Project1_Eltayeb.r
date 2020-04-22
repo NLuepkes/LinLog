@@ -707,11 +707,11 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
 # Uppsala has the most observations. For small data sets, individual points have a higher influence, so Lund und Abisko have higher leverages. 
 
 #### 3 b) ####
-I_high <- which(w.diagnostics$v > 0.026)
+I_highleverages <- which(w.diagnostics$v > 0.026)
 
 ggplot(weather, aes(temp, pressure)) +
 geom_point() +
-geom_point(data = weather[I_high, ], color = "red",
+geom_point(data = weather[I_highleverages, ], color = "red",
 shape = 24, size = 3) +
 facet_wrap(~ location)
 
@@ -738,28 +738,29 @@ ggplot(tmp.pred, aes(x = fit, y = r)) +
   # labs(title = "Weather: studentized residuals vs fitted values") +
   labs(caption = "y = +/- 2 and +/- 4") +
   theme(text = element_text(size = 18))
-# # Conclusion: No problematic studentized residuals for Abisko,
+# Conclusion: No problematic studentized residuals for Abisko,
 # but 1 for Uppsala and maybe 1 for Lund.
 
 #### 3d) ####
-# TODO 
+
+I_SR <- which(abs(tmp.pred$r) > 4)
+
+I_HL_SR <- cbind(I_highleverages, I_SR)
 
 # Plot of the "outliers" in terms of leverages
 ggplot(weather, aes(log(rain), pressure)) +
   geom_point() +
-  geom_point(data = weather[I_high, ], color = "red",
+  geom_point(data = weather[I_HL_SR, ], color = "red",
              shape = 24, size = 3) +
   facet_wrap(~ location)
 
 ggplot(weather, aes(log(rain), temp)) +
   geom_point() +
-  geom_point(data = weather[I_high, ], color = "red",
+  geom_point(data = weather[I_HL_SR, ], color = "red",
              shape = 24, size = 3) +
   facet_wrap(~ location)
 
-# We need to add something to I_high vector, to encircle the high studentized
-# residuals as well as leverages.
-
+# High pressure with small(er) amounts of rain is causing the problem with the residuals.
 
 #### 3e) ####
 w.diagnostics$D <- cooks.distance(model.2n)
@@ -771,25 +772,66 @@ ggplot(w.diagnostics, aes(x = pressure, y = D)) +
   geom_hline(yintercept = 4/n, color = "red",
              linetype = "dotted", size = 1) +
   facet_wrap(~ location) +
-  geom_point(data = w.diagnostics[I_high, ], 
+  geom_point(data = w.diagnostics[I_HL_SR, ], 
              color = "red")
-# still need to highlight the outliers from 3d)
-# then we can comment on the questions
-
-
-I_low <- c(I_high)
-
-# I_low doesn't work. Why not?
-
-ggplot(weather[-I_high ], aes(x = temp, y = pressure)) +
-geom_point() +
-geom_point(data = weather, color = "red",
-shape = 24, size = 3) +
-facet_wrap(~ location)
-
 #### 3f) ####
-# TODO
 
+I_cook <- which(w.diagnostics$D> 4/n)
+
+I_HL_SR_D <- cbind(I_HL_SR, I_cook)
+
+I_total <- cbind(which(I_HL_SR_D > 4/n))
+
+Exweather <- weather[-I_total, ]
+
+Exweather$location <- relevel(Exweather$location, "Uppsala")
+
+(modelX <- lm(log(rain) ~ temp * pressure + location, data = Exweather)) 
+
+sum_modelX <- summary(modelX)
+
+beta_estimates <- sum_modelX$coefficients
+
+confint(modelX)
+sum_modelX
+
+# Studentized residulas for trimmed dataset
+
+# Add studentized residuals
+modelX.pred <- cbind(Exweather, 
+                  fit = predict(modelX),
+                  e = residuals(modelX))
+
+modelX.pred$r <- rstudent(modelX)
+head(modelX.pred)
+
+ggplot(modelX.pred, aes(x = fit, y = r)) +
+  geom_jitter(width = 1) +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = c(-2, 2), color = "red") +
+  geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
+  facet_wrap(~ location) +
+  xlab("Fitted values") +
+  ylab("r*") +
+  # labs(title = "Weather: studentized residuals vs fitted values") +
+  labs(caption = "y = +/- 2 and +/- 4") +
+  theme(text = element_text(size = 18))
+# Conclusion: 
+
+w2.diagnostics <-
+  cbind(Exweather,
+        fit = predict(modelX),
+        v = influence(modelX)$hat)
+
+w2.diagnostics$D <- cooks.distance(modelX)
+head(w2.diagnostics)
+
+ggplot(w2.diagnostics, aes(x = pressure, y = D)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 4/n, color = "red",
+             linetype = "dotted", size = 1) +
+  facet_wrap(~ location) #+ geom_point(data = w2.diagnostics[I_HL_SR, ],  color = "red")
 
 #### 3.2 Model comparisons ####
 
