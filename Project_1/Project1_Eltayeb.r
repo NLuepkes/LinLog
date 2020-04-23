@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -124,8 +124,10 @@ ggplot(data = rain_pred,
 #### 1 b) #### 
 
 rm(list=ls())
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
 
@@ -188,8 +190,7 @@ head(weather)
     geom_line(data = rain_pred, aes(y = pred.lwr),
               color = "red", linetype = "dashed", size = 1) +
     geom_line(data = rain_pred, aes(y = pred.upr),
-              color = "red", linetype = "dashed", size = 1) +
-    labs(caption = "95% confidence and prediction intervals for fitted line in weather data")
+              color = "red", linetype = "dashed", size = 1)
 )
 
 # Does it look reasonable? 
@@ -250,12 +251,12 @@ ggplot(data = rain_pred,
 # where a = exp(B0) and b = exp(B1)
 
 # Estimates of a and b
-# beta_estimates <- model.mult_sum$coefficients
+#beta_estimates <- model.mult_sum$coefficients
 
 a <- exp(beta_estimates[1]) # a = 1.041
 b <- exp(beta_estimates[2]) # b = 0.943
 
-#confint(a*b^5)
+a*b^1
 
 #### 1 e) #### 
 # See above plots.
@@ -273,8 +274,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -305,8 +306,7 @@ ggplot(data = weather,
   geom_hline(yintercept = 0) +
   ylim(980,1040) +
   xlab("Temperature") +
-  ylab("Pressure") +
-  labs(title = "Temperature vs pressure") +
+  ylab("Pressure")
   theme(text = element_text(size = 18))
 
 # pressure vs rain
@@ -315,8 +315,7 @@ ggplot(data = weather,
   geom_point(size = 3) +
   geom_hline(yintercept = 0) +
   xlab("Pressure") +
-  ylab("Rain") +
-  labs(title = "Pressure vs rain") +
+  ylab("Rain")
   theme(text = element_text(size = 18))
 
 
@@ -465,8 +464,8 @@ a3^20
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 h) ####
 
@@ -523,8 +522,6 @@ ggplot(data = rain_pred,
   expand_limits(y = rain_elims) +
   xlab("Predicted amount of rain") +
   ylab("Residual") +
-  labs(tag = "B") +
-  labs(title = "Residuals vs predicted values Y-hat") +
   theme(text = element_text(size = 18))
 
 # Make a normal QQ-plot of residuals.
@@ -532,8 +529,6 @@ ggplot(data = rain_pred,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -541,10 +536,7 @@ ggplot(data = rain_pred,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
-
-
 
 #### 2 k) #### 
 # TODO
@@ -557,8 +549,8 @@ ggplot(data = rain_pred,
 ####  2 m) + n) #### 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 # Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
@@ -590,15 +582,20 @@ pred_multiloc <-
         e = residuals(model.mult_loc))
 head(pred_multiloc)
 
-
 elim <- max(abs(pred_multiloc$e)) * c(-1, 1)
-ggplot(pred_multiloc, aes(x = conf.fit, y = e, color = location)) +
+ggplot(pred_multiloc, aes(x = fit, y = e, color = location)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   expand_limits(y = elim) +
   facet_wrap(~ location)
 
-ggplot(pred_multiloc, aes(x =  temp * pressure, y = e, color = location)) +
+ggplot(pred_multiloc, aes(x =  temp, y = e, color = location)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = elim) +
+  facet_wrap(~ location)
+
+ggplot(pred_multiloc, aes(x =  pressure, y = e, color = location)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   expand_limits(y = elim) +
@@ -608,6 +605,11 @@ ggplot(pred_multiloc, aes(sample = e)) +
   geom_qq() + geom_qq_line() +
   expand_limits(y = elim)
 
+ggplot(pred_multiloc, aes(sample = e, color = location)) +
+  geom_qq() + geom_qq_line() +
+  expand_limits(y = elim)+
+  facet_wrap(~ location)
+
 
 # Save the max-value in order to make the y-axis symmetrical in the plots.
 (max.e <- max(abs(pred_multiloc$e)))
@@ -615,7 +617,6 @@ ggplot(pred_multiloc, aes(sample = e)) +
 
 # Plot residuals against yhat, add a horizontal line at y=0,
 # and expand the y-axis to include +/- max residual.
-
 ggplot(data = pred_multiloc, 
        aes(x = pred.fit, y = e)) +
   geom_point(size = 3) +
@@ -623,8 +624,6 @@ ggplot(data = pred_multiloc,
   expand_limits(y = rain_elims) +
   xlab("Predicted amount of rain") +
   ylab("Residual") +
-  labs(tag = "B") +
-  labs(title = "Residuals vs predicted values Y-hat") +
   theme(text = element_text(size = 18))
 
 # Make a normal QQ-plot of residuals.
@@ -632,8 +631,6 @@ ggplot(data = pred_multiloc,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -641,7 +638,6 @@ ggplot(data = pred_multiloc,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
 
 #### 2 q) ####
@@ -677,11 +673,11 @@ w.diagnostics <-
         v = influence(model.2n)$hat)
 head(w.diagnostics)
 
-ggplot(w.diagnostics, aes(x = temp, y = v)) +
+ggplot(w.diagnostics, aes(x = fit, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
-  geom_hline(yintercept = 0.026) +
+  geom_hline(yintercept = 0.026, color = "blue") +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
@@ -690,38 +686,78 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
-  geom_hline(yintercept = 0.026) +
+  geom_hline(yintercept = 0.026, color = "blue") +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+
+ggplot(w.diagnostics, aes(x = temp, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 0.026, color = "blue") +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
 # Uppsala has the most observations. For small data sets, individual points have a higher influence, so Lund und Abisko have higher leverages. 
 
 #### 3 b) ####
-I_high <- which(w.diagnostics$v > 0.026)
+I_highleverages <- which(w.diagnostics$v > 0.026)
 
 ggplot(weather, aes(temp, pressure)) +
 geom_point() +
-geom_point(data = weather[I_high, ], color = "red",
+geom_point(data = weather[I_highleverages, ], color = "red",
 shape = 24, size = 3) +
 facet_wrap(~ location)
 
 # Abisko is a lot more north, so the pressure vs. temp model maybe doesn't capture that behaviour
 
 #### 3 c) ####
-w.diagnostics$r <- rstudent(model.2n)
-head(w.diagnostics)
-ggplot(w.diagnostics, aes(x = temp, y = r)) +
-  geom_point() +
+
+# Add studentized residuals
+tmp.pred <- cbind(weather, 
+                  fit = predict(model.2n),
+                  e = residuals(model.2n))
+
+tmp.pred$r <- rstudent(model.2n)
+head(tmp.pred)
+
+ggplot(tmp.pred, aes(x = fit, y = r)) +
+  geom_jitter(width = 1) +
   geom_hline(yintercept = 0) +
-  geom_point(data = weather[I_high, ], color = "red",
-shape = 24, size = 3) +
-  geom_hline(yintercept = c(-2, 2), color = "red",
-             linetype = "dashed", size = 1) +
-  geom_hline(yintercept = c(-4, 4), color = "red",
-             linetype = "dotted", size = 1) +
-  facet_wrap(~ location)
+  geom_hline(yintercept = c(-2, 2), color = "red") +
+  geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
+  geom_point(data = tmp.pred[I_highleverages, ], color = "red",
+             shape = 24, size = 3) +
+  facet_wrap(~ location) +
+  xlab("Fitted values") +
+  ylab("r*") +
+  # labs(title = "Weather: studentized residuals vs fitted values") +
+  labs(caption = "y = +/- 2 and +/- 4") +
+  theme(text = element_text(size = 18))
+# Conclusion: No problematic studentized residuals for Abisko,
+# but 1 for Uppsala and maybe 1 for Lund.
+
 #### 3d) ####
-# TODO 
+
+I_SR <- which(abs(tmp.pred$r) > 4)
+
+I_HL_SR <- cbind(I_highleverages, I_SR)
+
+# Plot of the "outliers" in terms of leverages
+ggplot(weather, aes(log(rain), pressure)) +
+  geom_point() +
+  geom_point(data = weather[I_HL_SR, ], color = "red",
+             shape = 24, size = 3) +
+  facet_wrap(~ location)
+
+ggplot(weather, aes(log(rain), temp)) +
+  geom_point() +
+  geom_point(data = weather[I_HL_SR, ], color = "red",
+             shape = 24, size = 3) +
+  facet_wrap(~ location)
+
+# High pressure with small(er) amounts of rain is causing the problem with the residuals.
 
 #### 3e) ####
 w.diagnostics$D <- cooks.distance(model.2n)
@@ -733,20 +769,146 @@ ggplot(w.diagnostics, aes(x = pressure, y = D)) +
   geom_hline(yintercept = 4/n, color = "red",
              linetype = "dotted", size = 1) +
   facet_wrap(~ location) +
-  geom_point(data = w.diagnostics[I_high, ], 
+  geom_point(data = w.diagnostics[I_HL_SR, ], 
              color = "red")
-# still need to highlight the outliers from 3d)
-# then we can comment on the questions
+#### 3f) ####
 
-I_low <- which(weather$pressure != I_high)
-# I_low doesn't work. Why not?
-ggplot(weather, aes(temp, pressure)) +
-geom_point() +
-geom_point(data = weather[I_high, ], color = "red",
-shape = 24, size = 3) +
-facet_wrap(~ location)
-ggplot(weather, aes(temp, pressure)) +
-geom_point() +
-geom_point(data = weather[I_low, ], color = "red",
-shape = 24, size = 3) +
-facet_wrap(~ location)
+I_cook <- which(w.diagnostics$D> 4/n)
+
+I_HL_SR_D <- cbind(I_HL_SR, I_cook)
+
+I_total <- cbind(which(I_HL_SR_D > 4/n))
+
+Exweather <- weather[-I_total, ]
+
+Exweather$location <- relevel(Exweather$location, "Uppsala")
+
+(modelX <- lm(log(rain) ~ temp * pressure + location, data = Exweather)) 
+
+sum_modelX <- summary(modelX)
+
+beta_estimates <- sum_modelX$coefficients
+
+confint(modelX)
+sum_modelX
+
+# Studentized residulas for trimmed dataset
+
+# Add studentized residuals
+modelX.pred <- cbind(Exweather, 
+                  fit = predict(modelX),
+                  e = residuals(modelX))
+
+modelX.pred$r <- rstudent(modelX)
+head(modelX.pred)
+
+ggplot(modelX.pred, aes(x = fit, y = r)) +
+  geom_jitter(width = 1) +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = c(-2, 2), color = "red") +
+  geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
+  facet_wrap(~ location) +
+  xlab("Fitted values") +
+  ylab("r*") +
+  # labs(title = "Weather: studentized residuals vs fitted values") +
+  labs(caption = "y = +/- 2 and +/- 4") +
+  theme(text = element_text(size = 18))
+# Conclusion: 
+
+w2.diagnostics <-
+  cbind(Exweather,
+        fit = predict(modelX),
+        v = influence(modelX)$hat)
+
+w2.diagnostics$D <- cooks.distance(modelX)
+head(w2.diagnostics)
+
+ggplot(w2.diagnostics, aes(x = pressure, y = D)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 4/n, color = "red",
+             linetype = "dotted", size = 1) +
+  facet_wrap(~ location) #+ geom_point(data = w2.diagnostics[I_HL_SR, ],  color = "red")
+
+#### 3.2 Model comparisons ####
+
+#### 3 g) ####
+
+# Model from 1 b)
+(modelsec3_1b <- lm(rain ~ temp, data = Exweather))
+sum.modelsec3_1b <- summary(modelsec3_1b)
+
+# Model from 2 c)
+(modelsec3_2c <- lm(log(rain) ~ temp + pressure, data = Exweather)) 
+sum.modelsec3_2c <- summary(modelsec3_2c)
+
+
+# Model from 2 h)
+(modelsec3_2h <- lm(log(rain) ~ temp * pressure, data = Exweather)) 
+sum.modelsec3_2h <- summary(modelsec3_2h)
+
+
+#### R^2 and R^2_adj ####
+(collect.R2s <- data.frame(
+  nr = seq(1, 4),
+  model = c("rain vs temp", "log(rain) vs temp+pressure",  
+            "log(rain) vs temp*pressure", "log(rain) vs temp*pressure+location"),
+  R2 = c(sum.modelsec3_1b$r.squared,
+         sum.modelsec3_2c$r.squared,
+         sum.modelsec3_2h$r.squared,
+         sum_modelX$r.squared),
+  R2.adj = c(sum.modelsec3_1b$adj.r.squared,
+             sum.modelsec3_2c$adj.r.squared,
+             sum.modelsec3_2h$adj.r.squared,
+             sum_modelX$adj.r.squared)))
+
+
+#### AIC and BIC ####
+(collect.AIC <- data.frame(
+  nr = seq(1, 4),
+  model = c("rain vs temp", "log(rain) vs temp+pressure",  
+            "log(rain) vs temp*pressure", "log(rain) vs temp*pressure+location"),
+  AIC( modelsec3_1b, modelsec3_2c, modelsec3_2h, modelX),
+  BIC( modelsec3_1b, modelsec3_2c, modelsec3_2h, modelX)))
+
+
+#### 3 h) ####
+
+(modelX_2 <- lm(log(rain) ~ temp * pressure * location, data = Exweather)) 
+
+sum_modelX_2 <- summary(modelX_2)
+
+beta_estimates <- sum_modelX_2$coefficients
+
+confint(modelX_2)
+sum_modelX_2
+
+anova(modelX_2,modelX)
+
+AIC(modelX_2,modelX)
+BIC(modelX_2,modelX)
+
+# Conclusion: Not suitable to substitute temp * pressure + location
+# with temp * pressure * location.
+
+#### 3 i) ####
+# How do you remove variables, one by one without refitting the entire model?
+
+#### 3 j) ####
+# TODO
+
+#### 3 k) ####
+# Adding another categorical variable, season.
+
+Exweather$season <- "summer" 
+Exweather$season[Exweather$monthnr == 3 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 4 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 5 ] <- "spring" 
+Exweather$season[Exweather$monthnr == 12 ] <- "winter"
+Exweather$season[Exweather$monthnr == 1 ] <- "winter"
+Exweather$season[Exweather$monthnr == 2 ] <- "winter"
+Exweather$season[Exweather$monthnr == 9 ] <- "autumn"
+Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
+Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
+
+
