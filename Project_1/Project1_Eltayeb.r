@@ -41,8 +41,7 @@ library(ggplot2)
                       aes(x = x, y = Y)) + 
     geom_point(size = 1) +
     xlab("Temperature") +
-    ylab("Rain") +
-    labs(title = "Rain (mm)/ Temperature(C)") +
+    ylab("Rain")+
     theme(text = element_text(size = 16))
 )
 
@@ -729,7 +728,7 @@ tmp.pred$r <- rstudent(model.2n)
 head(tmp.pred)
 
 ggplot(tmp.pred, aes(x = fit, y = r)) +
-  geom_jitter(width = 1) +
+  geom_point() +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = c(-2, 2), color = "red") +
   geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
@@ -744,11 +743,11 @@ ggplot(tmp.pred, aes(x = fit, y = r)) +
 # Conclusion: No problematic studentized residuals for Abisko,
 # but 1 for Uppsala and maybe 1 for Lund.
 
-#### 3d) ####
+#### 3 d) ####
 
 I_SR <- which(abs(tmp.pred$r) > 4)
 
-I_HL_SR <- cbind(I_highleverages, I_SR)
+I_HL_SR <- c(I_highleverages, I_SR)
 
 # Plot of the "outliers" in terms of leverages
 ggplot(weather, aes(log(rain), pressure)) +
@@ -765,7 +764,7 @@ ggplot(weather, aes(log(rain), temp)) +
 
 # High pressure with small(er) amounts of rain is causing the problem with the residuals.
 
-#### 3e) ####
+#### 3 e) ####
 w.diagnostics$D <- cooks.distance(model.2n)
 head(w.diagnostics)
 
@@ -777,13 +776,13 @@ ggplot(w.diagnostics, aes(x = pressure, y = D)) +
   facet_wrap(~ location) +
   geom_point(data = w.diagnostics[I_HL_SR, ], 
              color = "red")
-#### 3f) ####
+#### 3 f) ####
 
-I_cook <- which(w.diagnostics$D> 4/n)
+I_cook <- which(w.diagnostics$D > 4/n)
 
-I_HL_SR_D <- cbind(I_HL_SR, I_cook)
+I_total <- c(I_HL_SR, I_cook)
 
-I_total <- cbind(which(I_HL_SR_D > 4/n))
+#I_total <- c(which(I_HL_SR_D > 4/n))
 
 Exweather <- weather[-I_total, ]
 
@@ -809,7 +808,7 @@ modelX.pred$r <- rstudent(modelX)
 head(modelX.pred)
 
 ggplot(modelX.pred, aes(x = fit, y = r)) +
-  geom_jitter(width = 1) +
+  geom_point() +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = c(-2, 2), color = "red") +
   geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
@@ -899,6 +898,8 @@ BIC(modelX_2,modelX)
 
 #### 3 i) ####
 # How do you remove variables, one by one without refitting the entire model?
+step(modelX_2,k = log(nrow(Exweather)))
+
 
 #### 3 j) ####
 # TODO
