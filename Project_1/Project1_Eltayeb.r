@@ -534,8 +534,6 @@ ggplot(data = rain_pred,
   expand_limits(y = rain_elims) +
   xlab("Predicted amount of rain") +
   ylab("Residual") +
-  labs(tag = "B") +
-  labs(title = "Residuals vs predicted values Y-hat") +
   theme(text = element_text(size = 18))
 
 # Make a normal QQ-plot of residuals.
@@ -543,8 +541,6 @@ ggplot(data = rain_pred,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -552,10 +548,7 @@ ggplot(data = rain_pred,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
-
-
 
 #### 2 k) #### 
 # TODO
@@ -602,13 +595,19 @@ pred_multiloc <-
 head(pred_multiloc)
 
 elim <- max(abs(pred_multiloc$e)) * c(-1, 1)
-ggplot(pred_multiloc, aes(x = conf.fit, y = e, color = location)) +
+ggplot(pred_multiloc, aes(x = fit, y = e, color = location)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   expand_limits(y = elim) +
   facet_wrap(~ location)
 
-ggplot(pred_multiloc, aes(x =  temp * pressure, y = e, color = location)) +
+ggplot(pred_multiloc, aes(x =  temp, y = e, color = location)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  expand_limits(y = elim) +
+  facet_wrap(~ location)
+
+ggplot(pred_multiloc, aes(x =  pressure, y = e, color = location)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   expand_limits(y = elim) +
@@ -618,6 +617,11 @@ ggplot(pred_multiloc, aes(sample = e)) +
   geom_qq() + geom_qq_line() +
   expand_limits(y = elim)
 
+ggplot(pred_multiloc, aes(sample = e, color = location)) +
+  geom_qq() + geom_qq_line() +
+  expand_limits(y = elim)+
+  facet_wrap(~ location)
+
 
 # Save the max-value in order to make the y-axis symmetrical in the plots.
 (max.e <- max(abs(pred_multiloc$e)))
@@ -625,7 +629,6 @@ ggplot(pred_multiloc, aes(sample = e)) +
 
 # Plot residuals against yhat, add a horizontal line at y=0,
 # and expand the y-axis to include +/- max residual.
-
 ggplot(data = pred_multiloc, 
        aes(x = pred.fit, y = e)) +
   geom_point(size = 3) +
@@ -633,8 +636,6 @@ ggplot(data = pred_multiloc,
   expand_limits(y = rain_elims) +
   xlab("Predicted amount of rain") +
   ylab("Residual") +
-  labs(tag = "B") +
-  labs(title = "Residuals vs predicted values Y-hat") +
   theme(text = element_text(size = 18))
 
 # Make a normal QQ-plot of residuals.
@@ -642,8 +643,6 @@ ggplot(data = pred_multiloc,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -651,7 +650,6 @@ ggplot(data = pred_multiloc,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
 
 #### 2 q) ####
@@ -691,7 +689,7 @@ ggplot(w.diagnostics, aes(x = fit, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
-  geom_hline(yintercept = 0.026) +
+  geom_hline(yintercept = 0.026, color = "blue") +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
@@ -700,7 +698,16 @@ ggplot(w.diagnostics, aes(x = pressure, y = v)) +
   geom_jitter(width = 1) +
   expand_limits(y = 0) +
   geom_hline(yintercept = 1/n) +
-  geom_hline(yintercept = 0.026) +
+  geom_hline(yintercept = 0.026, color = "blue") +
+  geom_hline(yintercept = 2*pplus1.2n/n, 
+             color = "red", linetype = "dashed", size = 1) +
+  facet_wrap(~ location)
+
+ggplot(w.diagnostics, aes(x = temp, y = v)) +
+  geom_jitter(width = 1) +
+  expand_limits(y = 0) +
+  geom_hline(yintercept = 1/n) +
+  geom_hline(yintercept = 0.026, color = "blue") +
   geom_hline(yintercept = 2*pplus1.2n/n, 
              color = "red", linetype = "dashed", size = 1) +
   facet_wrap(~ location)
@@ -732,6 +739,8 @@ ggplot(tmp.pred, aes(x = fit, y = r)) +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = c(-2, 2), color = "red") +
   geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dashed") +
+  geom_point(data = tmp.pred[I_highleverages, ], color = "red",
+             shape = 24, size = 3) +
   facet_wrap(~ location) +
   xlab("Fitted values") +
   ylab("r*") +
