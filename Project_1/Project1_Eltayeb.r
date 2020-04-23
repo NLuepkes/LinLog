@@ -544,10 +544,12 @@ ggplot(data = rain_pred,
   theme(text = element_text(size = 18))
 
 #### 2 k) #### 
-# TODO
+w.x0 = data.frame(temp = c(1,1) , pressure = c(1000, 1020))
+cbind(w.x0, exp(predict(model.mult, w.x0, interval = "prediction")))
 
 #### 2 l) #### 
-# TODO
+w.x1 = data.frame(temp = c(-10,10) , pressure = c(1000, 1020))
+cbind(w.x1, exp(predict(model.mult, w.x1, interval = "prediction")))
 
 #### 2.4 Temperature, pressure and location #### 
 
