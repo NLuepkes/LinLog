@@ -904,7 +904,10 @@ step(modelX_2,k = log(nrow(Exweather)))
 
 
 #### 3 j) ####
-# TODO
+model0 <- lm(log(rain) ~ 1, data = Exweather)
+step(model0, direction = "forward", k= log(nrow(Exweather)))
+step(modelX_2, direction = "forward", k= log(nrow(Exweather)))
+# TODO which one?
 
 #### 3 k) ####
 # Adding another categorical variable, season.
@@ -921,3 +924,4 @@ Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
 
 
+# refit with season and redo step()
