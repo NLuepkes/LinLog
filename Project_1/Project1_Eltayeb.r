@@ -109,8 +109,6 @@ ggplot(data = rain_pred,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -118,7 +116,6 @@ ggplot(data = rain_pred,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
 
 # Not a good model because it does not look gaussian.
@@ -227,8 +224,6 @@ ggplot(data = rain_pred,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "C") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
@@ -236,7 +231,6 @@ ggplot(data = rain_pred,
        aes(x = e)) +
   geom_histogram(bins = 20) +
   xlab("Residuals") +
-  labs(title = "Histogram of residuals") +
   theme(text = element_text(size = 18))
 
 ## Conclusion for 1 b): Better but not as good as we would want.
@@ -302,7 +296,6 @@ ggplot(data = weather,
   geom_hline(yintercept = 0) +
   xlab("Temperature") +
   ylab("Rain") +
-  labs(title = "Temperature vs rain") +
   theme(text = element_text(size = 18))
 
 # temp vs pressure
@@ -335,12 +328,14 @@ model.mult_sum <- summary(model.mult)
 
 # Betas (B0 =  , B1 = )
 beta_estimates <- model.mult_sum$coefficients
-B0 <- beta_estimates[1]
-B1 <- beta_estimates[2]
+B0 <- beta_estimates[0]
+B1 <- beta_estimates[1]
+B2 <- beta_estimates[2]
 
 # Estimation of standard deviation
-se_B0 <- model.mult_sum$coefficients[1,2]
-se_B1 <- model.mult_sum$coefficients[2,2]
+se_B0 <- model.mult_sum[["coefficients"]][0,2]
+se_B1 <- model.mult_sum$coefficients[1,2]
+se_B2 <- model.mult_sum$coefficients[2,2]
 
 # 95 % confidence intervals
 confInt <- confint(model.mult)
@@ -376,8 +371,6 @@ ggplot(data = rain_pred,
   expand_limits(y = rain_elims) +
   xlab("Predicted amount of rain") +
   ylab("Residual") +
-  labs(tag = "B") +
-  labs(title = "Residuals vs predicted values Y-hat") +
   theme(text = element_text(size = 18))
 
 ## Plot resid vs pressure
@@ -388,8 +381,6 @@ ggplot(data = weather,
   expand_limits(y = rain_elims) +
   xlab("Pressure") +
   ylab("Residual") +
-  labs(tag = "C") +
-  labs(title = "Pressure vs residual") +
   theme(text = element_text(size = 18))
 
 ## Temp vs resid
@@ -400,8 +391,6 @@ ggplot(data = weather,
   expand_limits(y = rain_elims) +
   xlab("Temperature") +
   ylab("Residual") +
-  labs(tag = "D") +
-  labs(title = "Temperature vs residual") +
   theme(text = element_text(size = 18))
 
 
@@ -410,8 +399,6 @@ ggplot(data = rain_pred,
        aes(sample = e)) +
   geom_qq(size = 3) +
   geom_qq_line() +
-  labs(tag = "E") +
-  labs(title = "Normal QQ-plot of residuals") +
   theme(text = element_text(size = 18))
 
 # Histogram of the residuals:
