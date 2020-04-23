@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -125,8 +125,8 @@ ggplot(data = rain_pred,
 
 rm(list=ls())
 
-#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
@@ -274,8 +274,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -455,10 +455,28 @@ rain_pred
 # change does not care about 'a' since 'a' is a constant. 
  a2^1 
 # 1.04 => increase by 4% 
-
-#### 2 f) Change the b-variable to different beta and see how line 425 changes output. ####
 a3^20
-# 0.31 => decrease by 69%
+# 0.3142831 => decrease by 69%
+
+#### 2 f) Change the b-variable to different beta ####
+
+temp5 <- which(weather[["temp"]] < 5.5 & weather[["temp"]] >= 4.5)
+press1000 <- which(weather[["pressure"]] < 1000.5 & weather[["pressure"]] >= 999.5)
+press1012 <- which(weather[["pressure"]] < 1012.5 & weather[["pressure"]] >= 1011.5)
+
+w.t5 <- weather[temp5, ]
+w.p1000 <- weather[press1000, ]
+w.p1012 <- weather[press1012, ]
+
+(model.2f.t5 <- lm(log(rain) ~ temp + pressure, data = w.t5)) 
+(model.2f.p1000 <- lm(log(rain) ~ temp + pressure, data = w.p1000))
+(model.2f.p1012 <- lm(log(rain) ~ temp + pressure, data = w.p1012)) 
+
+confint(model.2f.t5)
+confint(model.2f.p1000)
+confint(model.2f.p1012)
+
+
 
 #### 2.3 Temperature and pressure with interaction #####
 
