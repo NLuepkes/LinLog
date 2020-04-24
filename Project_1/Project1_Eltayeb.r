@@ -454,26 +454,14 @@ rain_pred
 # change does not care about 'a' since 'a' is a constant. 
  a2^1 
 # 1.04 => increase by 4% 
+#### 2 f) ####
 a3^20
 # 0.3142831 => decrease by 69%
 
-#### 2 f) Change the b-variable to different beta ####
+#### 2 g)  ####
 
-temp5 <- which(weather[["temp"]] < 5.5 & weather[["temp"]] >= 4.5)
-press1000 <- which(weather[["pressure"]] < 1000.5 & weather[["pressure"]] >= 999.5)
-press1012 <- which(weather[["pressure"]] < 1012.5 & weather[["pressure"]] >= 1011.5)
-
-w.t5 <- weather[temp5, ]
-w.p1000 <- weather[press1000, ]
-w.p1012 <- weather[press1012, ]
-
-(model.2f.t5 <- lm(log(rain) ~ temp + pressure, data = w.t5)) 
-(model.2f.p1000 <- lm(log(rain) ~ temp + pressure, data = w.p1000))
-(model.2f.p1012 <- lm(log(rain) ~ temp + pressure, data = w.p1012)) 
-
-confint(model.2f.t5)
-confint(model.2f.p1000)
-confint(model.2f.p1012)
+w.x0 = data.frame(temp = c(5,5) , pressure = c(1000, 1020))
+cbind(w.x0, exp(predict(model.mult, w.x0, interval = "prediction")))
 
 
 
@@ -556,10 +544,12 @@ ggplot(data = rain_pred,
   theme(text = element_text(size = 18))
 
 #### 2 k) #### 
-# TODO
+w.x0 = data.frame(temp = c(1,1) , pressure = c(1000, 1020))
+cbind(w.x0, exp(predict(model.mult, w.x0, interval = "prediction")))
 
 #### 2 l) #### 
-# TODO
+w.x1 = data.frame(temp = c(-10,10) , pressure = c(1000, 1020))
+cbind(w.x1, exp(predict(model.mult, w.x1, interval = "prediction")))
 
 #### 2.4 Temperature, pressure and location #### 
 
@@ -914,7 +904,10 @@ step(modelX_2,k = log(nrow(Exweather)))
 
 
 #### 3 j) ####
-# TODO
+model0 <- lm(log(rain) ~ 1, data = Exweather)
+step(model0, direction = "forward", k= log(nrow(Exweather)))
+step(modelX_2, direction = "forward", k= log(nrow(Exweather)))
+# TODO which one?
 
 #### 3 k) ####
 # Adding another categorical variable, season.
@@ -931,3 +924,4 @@ Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
 
 
+# refit with season and redo step()
