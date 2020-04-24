@@ -932,4 +932,13 @@ Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
 
 model_crazy <- lm(log(rain) ~ temp*pressure*location*season, data = Exweather)
+sum.crazy <- summary(model_crazy)
 step(model0, scope = list(upper = model_crazy), direction = "forward", k = log(nrow(Exweather)))
+
+(collect.R2s <- data.frame(
+  nr = seq(1, 1),
+  model = c("crazy model"),
+  R2 = c(sum.crazy$r.squared),
+  R2.adj = c(sum.crazy$adj.r.squared)))
+
+
