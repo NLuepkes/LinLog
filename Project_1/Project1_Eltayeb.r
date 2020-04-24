@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -124,8 +124,8 @@ ggplot(data = rain_pred,
 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
@@ -273,8 +273,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -784,8 +784,6 @@ I_cook <- which(w.diagnostics$D > 4/n)
 
 I_total <- c(I_HL_SR, I_cook)
 
-#I_total <- c(which(I_HL_SR_D > 4/n))
-
 Exweather <- weather[-I_total, ]
 
 Exweather$location <- relevel(Exweather$location, "Uppsala")
@@ -835,7 +833,7 @@ ggplot(w2.diagnostics, aes(x = pressure, y = D)) +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = 4/n, color = "red",
              linetype = "dotted", size = 1) +
-  facet_wrap(~ location) #+ geom_point(data = w2.diagnostics[I_HL_SR, ],  color = "red")
+  facet_wrap(~ location) + geom_point(data = w2.diagnostics[I_HL_SR, ],  color = "red")
 
 #### 3.2 Model comparisons ####
 
@@ -899,15 +897,14 @@ BIC(modelX_2,modelX)
 # with temp * pressure * location.
 
 #### 3 i) ####
-# How do you remove variables, one by one without refitting the entire model?
+# Backward elmination of whatever is redundant.
 step(modelX_2,k = log(nrow(Exweather)))
 
 
 #### 3 j) ####
 model0 <- lm(log(rain) ~ 1, data = Exweather)
-step(model0, direction = "forward", k= log(nrow(Exweather)))
-step(modelX_2, direction = "forward", k= log(nrow(Exweather)))
-# TODO which one?
+step(model0, scope = list(upper = modelX_2), direction = "forward", k = log(nrow(Exweather)))
+
 
 #### 3 k) ####
 # Adding another categorical variable, season.
@@ -923,5 +920,5 @@ Exweather$season[Exweather$monthnr == 9 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
 
-
-# refit with season and redo step()
+model_crazy <- lm(log(rain) ~ temp*pressure*location*season, data = Exweather)
+step(model0, scope = list(upper = model_crazy), direction = "forward", k = log(nrow(Exweather)))
