@@ -489,9 +489,10 @@ confint(model.mult)
 (model.mult1 <- lm(log(rain) ~ temp * pressure, data = weather))
 
 (model.mult2 <- lm(log(rain) ~ temp * I(pressure - 1012), data = weather)) 
-(model.plus <- lm(log(rain) ~ temp + I(pressure - 1012), data = weather)) 
+(model.plus <- lm(log(rain) ~ temp + I(pressure - 1012), data = weather))
 
-beta_estimates <- sum_mult$coefficients
+sum.mod2 <- summary(model.mult1)
+beta_estimates <- sum.mod2$coefficients
 
 confint(model.mult)
 confint(model.plus)
@@ -544,12 +545,22 @@ ggplot(data = rain_pred,
   theme(text = element_text(size = 18))
 
 #### 2 k) #### 
-w.x0 = data.frame(temp = c(1,1) , pressure = c(1000, 1020))
-cbind(w.x0, exp(predict(model.mult, w.x0, interval = "prediction")))
+#log(y) = beta0 + beta1*(x1) + beta2*x2 + beta3*x1*x2
+#log(y) = beta0 + beta1*(x1+1) + beta2*x2 + beta3*(x1+1)*x2
+#log(y1) - log(y0) = 0 + beta1 + 0 + beta3*x2
+# now plug in beta_estimates and x2
+beta1 = beta_estimates[2]
+beta3 = beta_estimates[4]
+
+exp(beta1 + beta3*1000)
+exp(beta1 + beta3*1020)
+
 
 #### 2 l) #### 
 w.x1 = data.frame(temp = c(-10,10) , pressure = c(1000, 1020))
-cbind(w.x1, exp(predict(model.mult, w.x1, interval = "prediction")))
+cbind(w.x1, exp(predict(model.mult, w.x1, interval = "confidence")))
+w.x2 = data.frame(temp = c(10,-10) , pressure = c(1000, 1020))
+cbind(w.x2, exp(predict(model.mult, w.x2, interval = "confidence")))
 
 #### 2.4 Temperature, pressure and location #### 
 
@@ -921,4 +932,13 @@ Exweather$season[Exweather$monthnr == 10 ] <- "autumn"
 Exweather$season[Exweather$monthnr == 11 ] <- "autumn"
 
 model_crazy <- lm(log(rain) ~ temp*pressure*location*season, data = Exweather)
+sum.crazy <- summary(model_crazy)
 step(model0, scope = list(upper = model_crazy), direction = "forward", k = log(nrow(Exweather)))
+
+(collect.R2s <- data.frame(
+  nr = seq(1, 1),
+  model = c("crazy model"),
+  R2 = c(sum.crazy$r.squared),
+  R2.adj = c(sum.crazy$adj.r.squared)))
+
+
