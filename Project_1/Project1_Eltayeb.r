@@ -3,8 +3,8 @@
 #### 1 a) #### 
 
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 head(weather)
@@ -124,8 +124,8 @@ ggplot(data = rain_pred,
 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
@@ -273,8 +273,8 @@ mm_x0 <- data.frame(x = c(5))
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 a) ####
 
@@ -469,8 +469,8 @@ cbind(w.x0, exp(predict(model.mult, w.x0, interval = "prediction")))
 
 rm(list=ls())
 
-load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 #### 2 h) ####
 
@@ -556,8 +556,8 @@ cbind(w.x1, exp(predict(model.mult, w.x1, interval = "prediction")))
 ####  2 m) + n) #### 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 summary(weather)
 # Fitting a linear regression model, with Uppsala as reference location because it got the most observations.
