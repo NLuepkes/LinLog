@@ -520,3 +520,239 @@ round(100*collect_AIC[, c("R2CS", "R2N")], digits = 1)
 
 
 #### 4 a) ####
+
+weather$location <- relevel(weather$location, "Uppsala")
+
+model_4a <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data=weather)
+sum_4a <- summary(model_4a)
+
+anova(model_2b,model_4a)
+anova(model_3a,model_4a)
+
+# beta: log-odds(ratio) with c.i.:
+model_4a$coefficients
+(ci.beta <- confint(model_4a))
+
+# Odds (exp(beta0)) and OR, odds ratio, exp(beta1)
+exp(model_4a$coefficients)
+(ci.or <- exp(ci.beta))
+
+# predict for plotting #
+# phat = estimated probabilities p
+model_4a.pred <- cbind(
+  weather,
+  phat = predict(model_4a, type = "response"))
+
+
+#### 4 b) ####
+
+library(ggplot2)
+
+ggplot(model_4a.pred, aes(I(pressure - 1012), lowrain)) +
+  geom_point() +
+  geom_smooth(se = FALSE, linetype = "dashed") +
+  geom_point(aes(y = phat, color = temp)) + scale_color_viridis_c() +
+  facet_wrap(~ location) +
+  xlab("Pressure") +
+  ylab("Low rain") +
+  labs(title = "No rain (=1) or low rain (=0) vs Pressure")
+  theme(text = element_text(size = 14))
+
+ggplot(model_4a.pred, aes(temp, lowrain)) +
+  geom_point() +
+  geom_smooth(se = FALSE, linetype = "dashed") +
+  geom_point(aes(y = phat, color = pressure)) + scale_color_viridis_c() +
+  facet_wrap(~ location) +
+  xlab("Temperature") +
+  ylab("Low rain") +
+  labs(title = "No rain (=1) or low rain (=0) vs temperature")
+  theme(text = element_text(size = 14))
+
+
+#### 4 c) ####
+  # Air pressure, because it looks more regular than for temperature.
+  
+  weather$location <- relevel(weather$location, "Lund")
+  
+  model_4c <- glm(lowrain ~ I(pressure - 1012) + temp + I(pressure - 1012)*temp + location, family = "binomial", data=weather)
+  sum_4c <- summary(model_4c)
+  
+  # beta: log-odds(ratio) with c.i.:
+  model_4c$coefficients
+  (ci.beta <- confint(model_4c))
+  
+  # Odds (exp(beta0)) and OR, odds ratio, exp(beta1)
+  exp(model_4c$coefficients)
+  (ci.or <- exp(ci.beta))
+  
+  step(model_4c, k = log(nrow(weather)))
+  # Is this correctly done? How do I interpret the output in the console?
+  
+  
+  
+#### 4 d) ####
+  
+  # predict for plotting #
+  # phat = estimated probabilities p
+  model_4a.pred <- cbind(
+    weather,
+    phat = predict(model_4a, type = "response"))
+  
+  infl.weather <- influence(model_4c)
+  model_4a.pred <- cbind(weather,
+                         xbeta = predict(model_4a),
+                         v = infl.weather$hat)
+  head(model_4a.pred)
+  
+  
+  # Deviance residuals, standardised
+  model_4a.pred$devres <- infl.weather$dev.res
+  model_4a.pred$devstd <- model_4a.pred$devres/sqrt(1 - model_4a.pred$v)
+  head(model_4a.pred)
+  
+  model_4a.pred$pearson <- infl.weather$pear.res
+  model_4a.pred$stdres <- model_4a.pred$pearson/sqrt(1 - model_4a.pred$v)
+  head(model_4a.pred)
+  
+  ggplot(model_4a.pred, aes(sample = stdres)) +
+    geom_qq() + geom_qq_line() +
+    labs(title = "Q-Q-plot standardized residuals") +
+    theme(text = element_text(size = 14))
+  
+  ggplot(model_4a.pred, aes(xbeta, stdres, 
+                            color = as.factor(lowrain))) +
+    geom_point() +
+    facet_wrap(~ location) +
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+               size = 1) +
+    geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Standardized residuals vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14))
+  
+  
+  ggplot(model_4a.pred, aes(temp, stdres, 
+                            color = as.factor(lowrain))) +
+    geom_point() +
+    facet_wrap(~ location) +
+    # geom_point(aes(y = ????, color = pressure)) + scale_color_viridis_c()+
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+               size = 1) +
+    geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Standardized residuals vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14))
+  
+  
+  ggplot(model_4a.pred, aes(pressure, stdres, 
+                            color = as.factor(lowrain))) +
+    geom_point() +
+    facet_wrap(~ location) +
+    # geom_point(aes(y = ????, color = temp)) + scale_color_viridis_c()+
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+               size = 1) +
+    geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Standardized residuals vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14))
+  
+# ----------------------------------------   Above is the problematic part
+  
+  ggplot(model_4a.pred, aes(xbeta, stdres^2, color = as.factor(lowrain))) +
+    geom_point() +
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = 4, color = "red", linetype = "dashed",
+               size = 1) +
+    labs(title = "Squared standardized residuals vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14))
+  
+  # Deviance residuals, standardised
+  model_4a.pred$devres <- infl.weather$dev.res
+  model_4a.pred$devstd <- model_4a.pred$devres/sqrt(1 - model_4a.pred$v)
+  head(model_4a.pred)
+  
+  I_highstdres4 <- which(model_4a.pred$stdres^2 > 20)
+  
+  ggplot(model_4a.pred, aes(xbeta, devstd, color = as.factor(lowrain))) +
+    geom_point() +
+    geom_point(data = model_4a.pred[I_highstdres4, ], size = 3, 
+               color = "red", shape = 24) +
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+               size = 1) +
+    geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Standardized deviance residuals vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14))
+  
+  ggplot(model_4a.pred, aes( I(pressure - 1012), devstd, color = as.factor(lowrain))) +
+    geom_point() +
+    geom_point(data = model_4a.pred[I_highstdres4, ], size = 3, 
+               color = "red", shape = 24)+
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+               size = 1) +
+    geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Standardized deviance residuals vs temp",
+         color = "Y") +
+    theme(text = element_text(size = 14)) +
+    facet_wrap(~ location)
+  
+  ggplot(model_4a.pred, aes(sample = devstd)) +
+    geom_qq() + geom_qq_line()
+  
+#### 4 e) ####
+
+  model_4a.pred$Dcook <- cooks.distance(model_4a)
+  head(model_4a.pred)
+  
+  ggplot(model_4a.pred, aes(xbeta, Dcook, color = as.factor(lowrain))) +
+    geom_point() +
+    geom_point(data = model_4a.pred[I_highstdres4, ], color = "black",
+               shape = 24, size = 3) +
+    geom_hline(yintercept = 0) +
+    #  geom_hline(yintercept = 1, color = "red", linetype = "dashed",
+    #             size = 1) +
+    geom_hline(yintercept = 14/1091, color = "red", linetype = "dotted",
+               size = 1) +
+    labs(title = "Cook's distance vs linear predictor",
+         color = "Y") +
+    theme(text = element_text(size = 14)) 
+  #facet_grid(rows = vars(highpm10), cols = vars(tempdiff))
+#### 4 f + g ####
+  
+  
+  
+  bic <- BIC(nullmod,model_2b, model_3a, model_4a)
+  aic <- AIC(nullmod,model_2b, model_3a, model_4a)
+  (collect_AIC <- data.frame(aic, bic))
+  
+  # model ???: ???? is the best (BIC)
+  
+  # pseudo R2####+
+  logLik(nullmod)
+  (lnL0 <- logLik(nullmod)[1])
+  (R2CS_max <- 1 - (exp(lnL0))^(2/1091))
+  # Collect the log likelihoods L(betahat)
+  collect_AIC$loglik <- 
+    c(logLik(nullmod)[1],
+      logLik(model_2b)[1],
+      logLik(model_3a)[1],
+      logLik(model_4a)[1])
+  # calculate R2_CS:
+  collect_AIC$R2CS <- 1 - (exp(lnL0 - collect_AIC$loglik))^(2/1091)
+  # Canculate R2_N:
+  collect_AIC$R2N <- collect_AIC$R2CS/R2CS_max
+  
+  # Show them as % with one decimal value:
+  round(100*collect_AIC[, c("R2CS", "R2N")], digits = 1)
+  
