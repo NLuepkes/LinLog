@@ -124,8 +124,8 @@ ggplot(data = rain_pred,
 
 rm(list=ls())
 
-load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 x <- weather$temp # Temperature
 Y <- log(weather$rain) # Rain, but now log-transformed because it looked like an exp-increase.
@@ -154,7 +154,7 @@ library(ggplot2)
 
 (
   plot_data <- ggplot(data = weather, 
-                      aes(x = x, y = Y)) + 
+                      aes(x = x, y = rain)) + 
     geom_point(size = 1) +
     xlab("Temperature") +
     ylab("Rain") +
@@ -191,6 +191,31 @@ head(weather)
     geom_line(data = rain_pred, aes(y = pred.upr),
               color = "red", linetype = "dashed", size = 1)
 )
+
+rain_pred <- 
+  cbind(rain_pred,
+        logconf = predict(model,
+                          interval = "confidence"))
+head(rain_pred)
+
+rain_pred <- 
+  cbind(weather,
+        logpred = predict(model, interval = "prediction"))
+head(rain_pred)
+
+ggplot(data = weather, aes(x = temp, y = rain)) +
+  geom_point() +
+  geom_line(data = rain_pred, aes(y = exp(logpred.fit)),
+            color = "blue") +
+  geom_ribbon(data = rain_pred,
+              aes(ymin = exp(logpred.lwr),
+                  ymax = exp(logpred.upr)),
+              alpha = 0.2) + 
+  geom_line(data = rain_pred, aes(y = exp(logpred.lwr)),
+            color = "red", linetype = "dashed", size = 1) +
+  geom_line(data = rain_pred, aes(y = exp(logpred.upr)),
+            color = "red", linetype = "dashed", size = 1)
+
 
 # Does it look reasonable? 
 # Not really, large confidence-and prediction-intervals
@@ -266,8 +291,8 @@ a*b^1
 mm_x0 <- data.frame(x = c(5))
 
 (rain_pred_y0 <- cbind(mm_x0,
-                     pred = predict(model, mm_x0,
-                                    interval = "prediction")))
+                     pred = exp(predict(model, mm_x0,
+                                    interval = "prediction"))))
 
 #### Section 2 ####
 
