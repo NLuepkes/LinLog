@@ -20,6 +20,7 @@ beta_est <- nullmod[["coefficients"]] # -0.9105233
 confint(nullmod)
 #     2.5 %    97.5 % 
 # -1.042988 -0.780509
+# Transform to odds to get corresponding 95 % for odds.
 exp(beta_est)/(1+exp(beta_est)) #  0.2868928
 stde <- sum_null$coefficients[1,2]
 
@@ -60,17 +61,29 @@ exp(beta_est_2b)/(1+exp(beta_est_2b)) # (Intercept) 0.3569551 ; temp 0.4815429
 exp(beta_1) # 0.9288 => odds decrease by 7% if temp increases by 1°C
 exp(beta_1)^(-1) # 1.076658 => odds increase by 7% if temp decreases by 1°C
 
-#### 2c) ??? ####
+#### 2c) ####
 x <- c(-10,-9,9,10)
 w.x0 = data.frame(temp = x)
-pred_2c <- cbind(w.x0, exp(predict(model_2b, w.x0, interval = "confidence")))
+pred_2c <- cbind(w.x0, xb = predict(model_2b, w.x0, se.fit = TRUE))
 # 1  -10   1.1618504
 # 2   -9   1.0791266
 # 3    9   0.2855435
 # 4   10   0.2652129
-xpred <- pred_2c[,2]
 
-# confint(pred_2c) does not work, alternative?
+# Look at pred_2c på gammalt hederligt sätt confint.
+
+# C.I. for prediction for -10 C: -0.1293223  0.4293501
+c(1.1618504 - 1.96*1.153174, 1.1618504 + 1.96*1.153174 ) 
+
+# C.I. for prediction for -9 C: -0.1875203  0.3398244
+c(1.079127 - 1.96*1.143995, 1.079127 + 1.96*1.143995 ) 
+
+# C.I. for prediction for 9 C: -1.421375 -1.085347
+c(0.2855435 - 1.96*1.089503, 0.2855435 + 1.96*1.089503 ) 
+
+# C.I. for prediction for 10 C: 1.147929 1.506516
+c(0.2652129 - 1.96*1.095791, 0.2652129 + 1.96*1.095791 ) 
+
 
 #### 2 d) ####
 
@@ -92,10 +105,11 @@ ggplot(model_2b.pred, aes(temp, lowrain)) +
   geom_point() +
   geom_smooth(se = FALSE, linetype = "dashed") +
   geom_line(aes(y = phat), color = "red", size = 1) +
+  # geom_ribbon(aes(ymin = p.lwr, ymax = p.upr), alpha = 0.2) +
   xlab("Temperature") +
   ylab("Low rain") +
-  labs(title = "No rain (=1) or low rain (=0) vs temperature",
-       caption = "red = fitted line, blue dashed = moving average") +
+  #labs(title = "No rain (=1) or low rain (=0) vs temperature",
+   #    caption = "red = fitted line, blue dashed = moving average") +
   theme(text = element_text(size = 14))
 
 # logit = logodds with s.e. for constructing C.I.
@@ -130,8 +144,8 @@ ggplot(model_2b.pred, aes(temp, lowrain)) +
   geom_ribbon(aes(ymin = p.lwr, ymax = p.upr), alpha = 0.2) +
   xlab("Temperature") +
   ylab("Low rain") +
-  labs(title = "No rain (=1) or low rain (=0) vs temperature",
-       caption = "red = fitted line, with 95% confidence interval") +
+  #labs(title = "No rain (=1) or low rain (=0) vs temperature",
+       # caption = "red = fitted line, with 95% confidence interval") +
   theme(text = element_text(size = 14))
 
 
@@ -243,7 +257,7 @@ ggplot(model_2b.pred, aes(temp, devstd, color = as.factor(lowrain))) +
              size = 1) +
   geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
              size = 1) +
-  labs(title = "Standardized deviance residuals vs temp",
+  labs(title = "Standardized deviance residuals vs temperature",
        color = "Y") +
   theme(text = element_text(size = 14)) +
   facet_wrap(~ location)
@@ -341,6 +355,8 @@ head(model_3a.pred)
 # Plotting the intervals:
 ggplot(model_3a.pred, aes(I(pressure - 1012), lowrain)) +
   geom_point() +
+  geom_smooth(se = FALSE, linetype = "dashed") +
+  geom_line(aes(y = phat), color = "red", size = 1) +
   geom_line(aes(y = phat), color = "red", size = 1) +
   geom_ribbon(aes(ymin = p.lwr, ymax = p.upr), alpha = 0.2) +
   xlab("Pressure") +
@@ -348,8 +364,6 @@ ggplot(model_3a.pred, aes(I(pressure - 1012), lowrain)) +
   labs(title = "No rain (=1) or low rain (=0) vs pressure",
        caption = "red = fitted line, with 95% confidence interval") +
   theme(text = element_text(size = 14))
-
-
 
 
 
@@ -402,9 +416,13 @@ ggplot(model_3a.pred, aes(I(pressure - 1012), v)) +
 
 #### 3 c) ####
 
-
 model_3a.pred$pearson <- infl.weather$pear.res
 model_3a.pred$stdres <- model_3a.pred$pearson/sqrt(1 - model_3a.pred$v)
+head(model_3a.pred)
+
+# Deviance residuals, standardised
+model_3a.pred$devres <- infl.weather$dev.res
+model_3a.pred$devstd <- model_3a.pred$devres/sqrt(1 - model_3a.pred$v)
 head(model_3a.pred)
 
 ggplot(model_3a.pred, aes(sample = stdres)) +
@@ -414,7 +432,7 @@ ggplot(model_3a.pred, aes(sample = stdres)) +
 
 # The as.factor(highpm10) prevents ggplot from using a 
 # spectrum and instead use default color number 1 and 2.
-ggplot(model_3a.pred, aes(xbeta, stdres, 
+ggplot(model_3a.pred, aes(I(pressure - 1012), devres, 
                           color = as.factor(lowrain))) +
   geom_point() +
   geom_hline(yintercept = 0) +
@@ -479,7 +497,7 @@ ggplot(model_3a.pred, aes(sample = devstd)) +
 model_3a.pred$Dcook <- cooks.distance(model_3a)
 head(model_3a.pred)
 
-ggplot(model_3a.pred, aes(xbeta, Dcook, color = as.factor(lowrain))) +
+ggplot(model_3a.pred, aes(I(pressure - 1012), Dcook, color = as.factor(lowrain))) +
   geom_point() +
   geom_point(data = model_3a.pred[I_highv3a, ], color = "black",
              shape = 24, size = 3) +
@@ -523,7 +541,7 @@ round(100*collect_AIC[, c("R2CS", "R2N")], digits = 1)
 
 weather$location <- relevel(weather$location, "Uppsala")
 
-model_4a <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data=weather)
+model_4a <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data = weather)
 sum_4a <- summary(model_4a)
 
 anova(model_2b,model_4a)
@@ -567,14 +585,14 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   ylab("Low rain") +
   labs(title = "No rain (=1) or low rain (=0) vs temperature")
   theme(text = element_text(size = 14))
-
+# Se hur trycket vs temp följer s-kurvan
 
 #### 4 c) ####
   # Air pressure, because it looks more regular than for temperature.
   
   weather$location <- relevel(weather$location, "Lund")
   
-  model_4c <- glm(lowrain ~ I(pressure - 1012) + temp + I(pressure - 1012)*temp + location, family = "binomial", data=weather)
+  model_4c <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data=weather)
   sum_4c <- summary(model_4c)
   
   # beta: log-odds(ratio) with c.i.:
@@ -614,12 +632,12 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   model_4a.pred$stdres <- model_4a.pred$pearson/sqrt(1 - model_4a.pred$v)
   head(model_4a.pred)
   
-  ggplot(model_4a.pred, aes(sample = stdres)) +
+  ggplot(model_4a.pred, aes(sample = devres)) +
     geom_qq() + geom_qq_line() +
-    labs(title = "Q-Q-plot standardized residuals") +
+    labs(title = "Q-Q-plot standardized deviance residuals") +
     theme(text = element_text(size = 14))
   
-  ggplot(model_4a.pred, aes(xbeta, stdres, 
+  ggplot(model_4a.pred, aes(xbeta, devres, 
                             color = as.factor(lowrain))) +
     geom_point() +
     facet_wrap(~ location) +
@@ -628,12 +646,12 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
                size = 1) +
     geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
                size = 1) +
-    labs(title = "Standardized residuals vs linear predictor",
+    labs(title = "Standardized deviance residuals vs linear predictor",
          color = "Y") +
     theme(text = element_text(size = 14))
   
   
-  ggplot(model_4a.pred, aes(temp, stdres, 
+  ggplot(model_4a.pred, aes(temp, devres, 
                             color = as.factor(lowrain))) +
     geom_point() +
     facet_wrap(~ location) +
@@ -643,7 +661,7 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
                size = 1) +
     geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
                size = 1) +
-    labs(title = "Standardized residuals vs linear predictor",
+    labs(title = "Standardized deviance residuals vs linear predictor",
          color = "Y") +
     theme(text = element_text(size = 14))
   
@@ -755,4 +773,5 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   
   # Show them as % with one decimal value:
   round(100*collect_AIC[, c("R2CS", "R2N")], digits = 1)
+  
   

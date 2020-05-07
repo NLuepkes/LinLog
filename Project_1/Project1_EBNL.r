@@ -199,17 +199,18 @@ rain_pred <-
 head(rain_pred)
 
 rain_pred <- 
-  cbind(weather,
+  cbind(rain_pred,
         logpred = predict(model, interval = "prediction"))
 head(rain_pred)
+
 
 ggplot(data = weather, aes(x = temp, y = rain)) +
   geom_point() +
   geom_line(data = rain_pred, aes(y = exp(logpred.fit)),
             color = "blue") +
   geom_ribbon(data = rain_pred,
-              aes(ymin = exp(logpred.lwr),
-                  ymax = exp(logpred.upr)),
+              aes(ymin = exp(logconf.lwr),
+                  ymax = exp(logconf.upr)),
               alpha = 0.2) + 
   geom_line(data = rain_pred, aes(y = exp(logpred.lwr)),
             color = "red", linetype = "dashed", size = 1) +
@@ -293,6 +294,9 @@ mm_x0 <- data.frame(x = c(5))
 (rain_pred_y0 <- cbind(mm_x0,
                      pred = exp(predict(model, mm_x0,
                                     interval = "prediction"))))
+
+
+
 
 #### Section 2 ####
 
