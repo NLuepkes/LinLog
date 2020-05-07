@@ -53,6 +53,11 @@ beta_est_2b <- model_2b[["coefficients"]]
 beta_1 <- beta_est_2b[2]
 confint(model_2b)
 
+# Odds (exp(beta0)) and OR, odds ratio, exp(beta1)
+exp(model_2b$coefficients)
+(ci.or <- exp(ci.beta))
+
+
 #                   2.5 %      97.5 %
 # (Intercept) -0.73897322 -0.43949978
 # temp        -0.09218264 -0.05599002

@@ -1,20 +1,12 @@
-questions for project 2
+Questions for project 2
 
-small probability for lowrain means high probability for a lot of rain, right?
 
-1b) "Use the-estimated odds to estimate the probability..." how? aren't we doing a circle?
+----------
+1b) "Use the-estimated odds to estimate the probability of a month having low precipitation. Also report a 95 % confidence interval for the probability." This needs to be answered in overleaf.
+----------
 
-2b) how to calculate the confint of odds?
 
-2c) how do we do that for the specific temperatures? 
+4c) Error when fitting model for Lund data. Why? 
+Did we use step() correctly? How to interpret output?
 
-3a) what is the gray part? the CI?
-
-4a) is temp*pressure + loc okay? or single terms as well?
-    anova just for nested models, right?
-
-4c) did we use step() correctly? How to interpret output?
-
-4d) predict(model) or predict(model, type="response") ?
-    how to do the coloration?
-
+4d) How do we do the coloration correctly?
