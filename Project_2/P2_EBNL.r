@@ -587,12 +587,12 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   theme(text = element_text(size = 14))
 # Se hur trycket vs temp följer s-kurvan
 
-#### 4 c) ####
+#### 4 c) ???? ####
   # Air pressure, because it looks more regular than for temperature.
   
-  weather$location <- relevel(weather$location, "Lund")
+  I_lund <- which(weather$location == "Lund")
   
-  model_4c <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data=weather)
+  model_4c <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data = weather[I_lund,])
   sum_4c <- summary(model_4c)
   
   # beta: log-odds(ratio) with c.i.:
@@ -605,7 +605,6 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   
   step(model_4c, k = log(nrow(weather)))
   # Is this correctly done? How do I interpret the output in the console?
-  
   
   
 #### 4 d) ####
