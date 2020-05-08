@@ -3,8 +3,10 @@ Questions for project 2
 
 ----------
 1b) "Use the-estimated odds to estimate the probability of a month having low precipitation. Also report a 95 % confidence interval for the probability." This needs to be answered in overleaf.
+how to get all three c.i.?
 ----------
 
+2c) does that make sense? 0 is inside?
 
 4c) Error when fitting model for Lund data. Why? 
 Did we use step() correctly? How to interpret output?
