@@ -24,7 +24,8 @@ confint(nullmod)
 exp(beta_est)/(1+exp(beta_est)) #  0.2868928
 stde <- sum_null$coefficients[1,2]
 
-# ....
+exp(confint(nullmod))/(1+exp(confint(nullmod)))
+
 c(beta_est - 1.96*stde, beta_est + 1.96*stde) # (-1.0417150, -0.7793317)
 # this is almost identical, so the estimation is really point on
 
@@ -70,24 +71,27 @@ exp(beta_1)^(-1) # 1.076658 => odds increase by 7% if temp decreases by 1°C
 x <- c(-10,-9,9,10)
 w.x0 = data.frame(temp = x)
 pred_2c <- cbind(w.x0, xb = predict(model_2b, w.x0, se.fit = TRUE))
-# 1  -10   1.1618504
-# 2   -9   1.0791266
-# 3    9   0.2855435
-# 4   10   0.2652129
+#   temp      xb.fit  xb.se.fit xb.residual.scale
+# 1  -10  0.15001387 0.14251847                 1
+# 2   -9  0.07615205 0.13452670                 1
+# 3    9 -1.25336073 0.08572146                 1
+# 4   10 -1.32722255 0.09147615                 1
 
-# Look at pred_2c på gammalt hederligt sätt confint.
 
-# C.I. for prediction for -10 C: -0.1293223  0.4293501
-c(1.1618504 - 1.96*1.153174, 1.1618504 + 1.96*1.153174 ) 
+# same transformation as in 1b)
+# only on xb.fit
+exp(pred_2c$xb.fit)/(1+exp(pred_2c$xb.fit))
+# 0.5374333 0.5190288 0.2221189 0.2096192
 
-# C.I. for prediction for -9 C: -0.1875203  0.3398244
-c(1.079127 - 1.96*1.143995, 1.079127 + 1.96*1.143995 ) 
-
-# C.I. for prediction for 9 C: -1.421375 -1.085347
-c(0.2855435 - 1.96*1.089503, 0.2855435 + 1.96*1.089503 ) 
-
-# C.I. for prediction for 10 C: 1.147929 1.506516
-c(0.2652129 - 1.96*1.095791, 0.2652129 + 1.96*1.095791 ) 
+# -10
+c(0.5374333 - 1.96*0.14251847, 0.5374333 + 1.96*0.14251847)
+# -9
+c(0.5190288 - 1.96*0.13452670, 0.5190288 + 1.96*0.13452670)
+# 9
+c(0.2221189 - 1.96*0.08572146, 0.2221189 + 1.96*0.08572146)
+# 10
+c(0.2096192 - 1.96*0.09147615, 0.2096192 + 1.96*0.09147615)
+ 
 
 
 #### 2 d) ####
@@ -592,12 +596,14 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   theme(text = element_text(size = 14))
 # Se hur trycket vs temp följer s-kurvan
 
-#### 4 c) ???? ####
+#### 4 c) ####
   # Air pressure, because it looks more regular than for temperature.
   
   I_lund <- which(weather$location == "Lund")
   
-  model_4c <- glm(lowrain ~ I(pressure - 1012)*temp + location, family = "binomial", data = weather[I_lund,])
+  weather.Lund <- weather[I_lund,]
+  
+  model_4c <- glm(lowrain ~ I(pressure - 1012)*temp, family = "binomial", data = weather.Lund)
   sum_4c <- summary(model_4c)
   
   # beta: log-odds(ratio) with c.i.:
@@ -610,7 +616,29 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   
   step(model_4c, k = log(nrow(weather)))
   # Is this correctly done? How do I interpret the output in the console?
-  
+# Start:  AIC=169.06
+# lowrain ~ I(pressure - 1012) * temp <- Model that is being tested
+
+#                           Df Deviance    AIC
+# - I(pressure - 1012):temp  1   143.74 164.72  <- the interaction term between pressure and temp is removed
+# <none>                         141.08 169.06  <- nothing is done
+# so now step() compares the two BIC values (AIC in output) and picks the model with the lower one and continues.
+# Step:  AIC=164.72
+# lowrain ~ I(pressure - 1012) + temp    <- current model
+
+#                      Df Deviance    AIC
+# - temp                1   147.63 161.62 <- remove temp
+# <none>                    143.74 164.72 <- do nothing
+# - I(pressure - 1012)  1   188.98 202.97  <- remove pressure
+# removing temp lowered the BIC value (AIC in output), so step() continues with this
+# Step:  AIC=161.62
+# lowrain ~ I(pressure - 1012) <- current model
+# 
+#                      Df Deviance    AIC
+# <none>                    147.63 161.62 <- do nothing
+# - I(pressure - 1012)  1   194.37 201.36 <- remove pressure
+# removing pressure doesn't give a better BIC value (AIC in output). Because it is the last term and there is nothing else 
+# that could possibly be removed, step() stops here and presents the final model
   
 #### 4 d) ####
   
@@ -1165,10 +1193,9 @@ ggplot(HL.df.2, aes(group, Obs0)) +
 
 # ------------------------------ And for model 1:
 
-(HL.4 <- hoslem.test(pred.sort$lowrain, pred.sort$p.4, 
-                        g = 12))
+(HL.4 <- hoslem.test(pred.sort$lowrain, pred.sort$p.4, g = 8))
 HL.4$expected
-(HL.df.4 <- data.frame(group = seq(1, 12),
+(HL.df.4 <- data.frame(group = seq(1, 11),
                        Obs0 = HL.4$observed[, 1],
                        Obs1 = HL.4$observed[, 2],
                        Exp0 = HL.4$expected[, 1],
@@ -1185,4 +1212,9 @@ ggplot(HL.df.4, aes(group, Obs0)) +
   scale_x_continuous(breaks = seq(1, 12)) +
   theme(text = element_text(size = 14))
 
+# p-value = 0.1496 => not significantly bad
 
+
+# ----
+# the mean should be around 5 and p < 0.5. the lines in the plot should be close to each other
+# for overleaf: present two different group values that give obviously different results
