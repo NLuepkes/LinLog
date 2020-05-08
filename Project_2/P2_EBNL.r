@@ -821,5 +821,190 @@ pred.phat$yhat.4 <- as.numeric(pred.phat$p.4 > 0.5)
 (accu.4 <- sum(diag(confusion.4)) / sum(confusion.4))
 (prec.4 <- confusion.4[2, 2] / col.01.3[2])
 
+# compare values in a table in overleaf
+
 
 #### 5b) ####
+# ROC-curves####
+# Calculate for model 2, 3, and 4.
+library(pROC)
+(roc.2 <- roc(lowrain ~ p.2, data = pred.phat))
+# save the coordinates in a data frame for plotting.
+roc.df.2 <- coords(roc.2, transpose = FALSE)
+roc.df.2$model <- "2b"
+roc.df.2
+
+(roc.3 <- roc(lowrain ~ p.3, data = pred.phat))
+# save the coordinates in a data frame for plotting.
+roc.df.3 <- coords(roc.3, transpose = FALSE)
+roc.df.3$model <- "3a"
+head(roc.df.3)
+
+(roc.4 <- roc(lowrain ~ p.4, data = pred.phat))
+# save the coordinates in a data frame for plotting.
+roc.df.4 <- coords(roc.4, transpose = FALSE)
+roc.df.4$model <- "4a"
+head(roc.df.4)
+
+
+# Built-in function for plotting one Roc-curve
+# Note that the x-axis is reversed!
+# If we want the diagonal with geom_abline, it has to be reversed!
+# Since both axes are 0-1, we want a square plot area:
+# + coord_fixed()
+ggroc(roc.2) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  coord_fixed() +
+  labs(title = "ROC-curve for model 2b")
+  
+ggroc(roc.3) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  coord_fixed() +
+  labs(title = "ROC-curve for model 3a")
+  
+ggroc(roc.4) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  coord_fixed() +
+  labs(title = "ROC-curve for model 4a")
+
+# Plot the three ROC-curves:
+# Use geom_path() instead of geom_line()
+#
+# For model 3 the curve is color coded according to
+# the threshold. The color scheme is set by
+# + scale_color_gradientn(colours = rainbow(5)) +
+#
+# Note that the x-axis is reversed!
+# + scale_x_reverse()
+# You could use 1 - spec instead.
+# If we want the diagonal with geom_abline, it has to be reversed!
+#
+# Since both axes are 0-1, we want a square plot area:
+# + coord_fixed()
+#
+ggplot(roc.df.3, aes(specificity, sensitivity)) +
+  geom_path(aes(color = threshold), size = 2) +
+  geom_path(data = roc.df.ideal, color = "black", size = 1) +
+  geom_path(data = roc.df.2, color = "red", size = 1,
+            linetype = "dashed") +
+  geom_point(data = roc.df.3[I_max.3, ], color = "black", size = 3) +
+#  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  scale_color_gradientn(colours = rainbow(5)) +
+  coord_fixed() +       # square plotting area
+  scale_x_reverse() +   # Reverse scale on the x-axis!
+  labs(title = "ROC-curve for model 3a",
+       caption = "Black dot = optimal threshold") +
+  theme(text = element_text(size = 14))
+
+# ROC-curves for all models####
+roc.2 <- roc(lowrain ~ p.2, data = pred.phat)
+roc.df.2 <- coords(roc.2, transpose = FALSE)
+roc.df.2$model <- "2b"
+roc.3 <- roc(lowrain ~ p.3, data = pred.phat)
+roc.df.3 <- coords(roc.3, transpose = FALSE)
+roc.df.3$model <- "3a"
+roc.4 <- roc(lowrain ~ p.4, data = pred.phat)
+roc.df.4 <- coords(roc.4, transpose = FALSE)
+roc.df.4$model <- "4a"
+
+roc.df <- rbind(roc.df.2, roc.df.3, roc.df.4)
+
+# Plot all the curves, in different colors:
+ggplot(roc.df, aes(specificity, sensitivity,
+                            color = model)) +
+  geom_path(size = 1) +
+  coord_fixed() +       # square plotting area
+  scale_x_reverse() +   # Reverse scale on the x-axis!
+  labs(title = "ROC-curves for all the models") +
+  theme(text = element_text(size = 14))
+
+# AUC####
+roc.3
+auc(roc.3)
+# Confidence interval for AUC
+(ci.3 <- ci(roc.3))
+# lower limit:
+ci.3[1]
+# AUC:
+ci.3[2]
+# upper limit:
+ci.3[3]
+
+#Collect AUC and intervals for all the models:
+(aucs <- 
+  data.frame(
+    model = c("2b", "3a", "4a"),
+    auc = c(auc(roc.2), auc(roc.3), auc(roc.4)),
+    lwr = c(ci(roc.2)[1], ci(roc.3)[1], ci(roc.4)[1]),
+    upr = c(ci(auc(roc.2))[3], ci(auc(roc.3))[3], ci(auc(roc.4))[3])))
+
+# Compare the AUC for the models:
+
+roc.test(roc.3, roc.2)
+roc.test(roc.4, roc.2)
+roc.test(roc.3, roc.4)
+
+# we want a big AUC
+# create a table in overleaf with values from above
+
+#### 5c) ####
+
+# Create the data for the Ideal model by hand:
+roc.df.ideal <- data.frame(sensitivity = c(0, 1, 1),
+                           specificity = c(1, 1, 0),
+                           threshold = c(NA, NA, NA))
+roc.df.ideal$model <- "ideal"
+
+# experiment with different values of "limit" to find the
+# optimal combination of sens and spec.
+
+(row.01 <- table(weather$lowrain))
+
+# -------- MODEL 2b --------------
+
+limit_2 <- 0.299
+pred.phat$yhat.2 <- as.numeric(pred.phat$p.2 > limit_2)
+(col.01.2 <- table(pred.phat$yhat.2))
+(confusion.2 <- table(pred.phat$lowrain, pred.phat$yhat.2))
+(spec.2 <- confusion.2[1, 1] / row.01[1])
+(sens.2 <- confusion.2[2, 2] / row.01[2])
+spec.2 - sens.2
+
+(accu.2 <- sum(diag(confusion.2)) / sum(confusion.2))
+(prec.2 <- confusion.2[2, 2] / col.01.2[2])
+
+                  
+# -------- MODEL 3a --------------
+
+limit_3 <- 0.3
+pred.phat$yhat.3 <- as.numeric(pred.phat$p.3 > limit_3)
+
+(col.01.3 <- table(pred.phat$yhat.3))
+(confusion.3 <- table(pred.phat$lowrain, pred.phat$yhat.3))
+(spec.3 <- confusion.3[1, 1] / row.01[1])
+(sens.3 <- confusion.3[2, 2] / row.01[2])
+abs(spec.3 - sens.3)
+
+(accu.3 <- sum(diag(confusion.3)) / sum(confusion.3))
+(prec.3 <- confusion.3[2, 2] / col.01.3[2])
+
+                   
+# -------- MODEL 4a --------------
+
+limit_4 <- 0.285
+pred.phat$yhat.4 <- as.numeric(pred.phat$p.4 > limit_4)
+(col.01.4 <- table(pred.phat$yhat.4))
+(confusion.4 <- table(pred.phat$lowrain, pred.phat$yhat.4))
+(spec.4 <- confusion.4[1, 1] / row.01[1])
+(sens.4 <- confusion.4[2, 2] / row.01[2])
+spec.4 - sens.4
+
+(accu.4 <- sum(diag(confusion.4)) / sum(confusion.4))
+(prec.4 <- confusion.4[2, 2] / col.01.3[2])
+
+# put all values in a table in overleaf and compare. Probably acc and prec got shitty
+
+
+#### 5d) ####
+
+
