@@ -1006,5 +1006,183 @@ spec.4 - sens.4
 
 
 #### 5d) ####
+# Hosmer-Lemeshow-test####
+library(ResourceSelection)
+# plot in sorted p-order
+# order(variable) gives the ranks for the values in variable.
+# It can then be used to sort the data frame:
+pred.sort <- pred.phat[order(pred.phat$p.3), ]
+pred.sort$rank <- seq(1, nrow(pred.sort))
+head(pred.sort)
+
+# Divide the n=500 observations into g=10 groups:
+n <- nrow(pred.sort)
+g <- 10
+# with ng = 50 observations each:
+ng <- n/g
+
+# Plot p_i and Y_i
+# Add i vertical jitter to Y_i to separate them
+ggplot(pred.sort, aes(rank, p.3)) +
+  geom_point() +
+  geom_jitter(aes(y = lowrain), height = 0.01) +
+  geom_vline(xintercept = seq(ng, nrow(pred.sort) - ng, ng)) +
+  labs(title = "Model 3: Estimated probabilities by increasing size",
+       caption = "g = 10 groups",
+       x = "(i) = 1,...,n", y = "p-hat") +
+  theme(text = element_text(size = 14))
+
+# HL by hand####
+# The following can be done using the output of the
+# hoslem.test function, see below.
+# I do is here to illustrate the steps.
+
+# A for-loop to set the group numbers:
+pred.sort$group <- NA
+for (k in seq(1, g)) {
+  I <- (k - 1)*ng + seq(1, ng)
+  pred.sort$group[I] <- k
+}
+head(pred.sort)
+
+# Calculate Observed and Expected in each group:
+# aggregate(y ~ x, FUN = mean) calculates the mean of y
+# separately for each group.
+# merge(data1, data2) joins two data frames using any common
+# variables as keys, in this case, "group".
+
+# Number of successes:
+OE1 <- merge(aggregate(lowrain ~ group, data = pred.sort, FUN = sum),
+             aggregate(p.3 ~ group, data = pred.sort, FUN = sum))
+OE1
+# Number of failures = n_g - successes:
+OE0 <- OE1
+OE0$lowrain <- ng - OE1$lowrain
+OE0$p.3 <- ng - OE1$p.3
+# A variable to cure for color coding:
+OE1$outcome <- "O1k, E1k"
+OE0$outcome <- "O0k, E0k"
+# Bind the two data sets as rows (r):
+(OE <- rbind(OE1, OE0))
+
+# And plot:
+# Set the tickmarks on the x-axis to integers 1,...,g
+ggplot(OE, aes(group, p.3, color = outcome)) +
+  geom_line(size = 1) +
+  geom_line(aes(y = lowrain), linetype = "dashed", size = 1) +
+  labs(title = "Model 3: Observed and expected in each group",
+       caption = "solid = expected, dashed = observed",
+       y = "number of observations") +
+  theme(text = element_text(size = 14)) +
+  scale_x_continuous(breaks = seq(1, g))
+
+# The test:
+(chi2HL <- sum((OE$lowrain - OE$p.3)^2/OE$p.3))
+# chi2-quantile to compare with:
+qchisq(1 - 0.05, g - 2)
+# or P-value:
+pchisq(chi2HL, g - 2, lower.tail = FALSE)
+
+# HL using hoslem.test####
+# p+1:
+length(model_3a$coefficients)
+# so we need g > 3
+# while the smallest expected value is at least approx 5:
+# Allowing 4 here and have experimented with g:
+(HL.3 <- hoslem.test(pred.sort$lowrain, pred.sort$p.3, g = 8))
+HL.3$expected
+
+# Collect the data in a useful form for plotting:
+(HL.df.3 <- data.frame(group = seq(1, 8),
+                       Obs0 = HL.3$observed[, 1],
+                       Obs1 = HL.3$observed[, 2],
+                       Exp0 = HL.3$expected[, 1],
+                       Exp1 = HL.3$expected[, 2]))
+
+ggplot(HL.df.3, aes(group, Obs0)) +
+  geom_line(linetype = "dashed", color = "red", size = 1) +
+  geom_line(aes(y = Obs1), linetype = "dashed", size = 1) +
+  geom_line(aes(y = Exp0), color = "red", size = 1) +
+  geom_line(aes(y = Exp1), size = 1) +
+  labs(title = "Model 3: Observed and expected in each group",
+       caption = "solid = expected, dashed = observed, red = 0, black = 1",
+       y = "number of observations") +
+  scale_x_continuous(breaks = seq(1, 11)) +
+  theme(text = element_text(size = 14))
+# ------------------------ Model 3, short version
+
+group_3 <- 5
+length(model_3a$coefficients)
+(HL.3 <- hoslem.test(pred.sort$lowrain, pred.sort$p.3, 
+                        g = group_3))
+HL.3$expected
+
+(HL.df.3 <- data.frame(group = seq(1, group_3),
+                     Obs0 = HL.3$observed[, 1],
+                     Obs1 = HL.3$observed[, 2],
+                     Exp0 = HL.3$expected[, 1],
+                     Exp1 = HL.3$expected[, 2]))
+# How many observations in each group?
+HL.df.3$Obs0 + HL.df.3$Obs1
+
+ggplot(HL.df.3, aes(group, Obs0)) +
+  geom_line(linetype = "dashed", color = "red", size = 1) +
+  geom_line(aes(y = Obs1), linetype = "dashed", size = 1) +
+  geom_line(aes(y = Exp0), color = "red", size = 1) +
+  geom_line(aes(y = Exp1), size = 1) +
+  labs(title = "Model 3a: Observed and expected in each group",
+       caption = "solid = expected, dashed = observed, red = 0, black = 1",
+       y = "number of observations") +
+  scale_x_continuous(breaks = seq(1, group_3)) +
+  theme(text = element_text(size = 14))
+  
+
+# ------------------------- Do the same for model 2b:
+length(model_2b$coefficients)
+(HL.2 <- hoslem.test(pred.sort$lowrain, pred.sort$p.2, 
+                        g = 7))
+HL.2$expected
+
+(HL.df.2 <- data.frame(group = seq(1, 7),
+                     Obs0 = HL.2$observed[, 1],
+                     Obs1 = HL.2$observed[, 2],
+                     Exp0 = HL.2$expected[, 1],
+                     Exp1 = HL.2$expected[, 2]))
+# How many observations in each group?
+HL.df.2$Obs0 + HL.df.2$Obs1
+
+ggplot(HL.df.2, aes(group, Obs0)) +
+  geom_line(linetype = "dashed", color = "red", size = 1) +
+  geom_line(aes(y = Obs1), linetype = "dashed", size = 1) +
+  geom_line(aes(y = Exp0), color = "red", size = 1) +
+  geom_line(aes(y = Exp1), size = 1) +
+  labs(title = "Model 2b: Observed and expected in each group",
+       caption = "solid = expected, dashed = observed, red = 0, black = 1",
+       y = "number of observations") +
+  scale_x_continuous(breaks = seq(1, 10)) +
+  theme(text = element_text(size = 14))
+  
+
+# ------------------------------ And for model 1:
+
+(HL.4 <- hoslem.test(pred.sort$lowrain, pred.sort$p.4, 
+                        g = 12))
+HL.4$expected
+(HL.df.4 <- data.frame(group = seq(1, 12),
+                       Obs0 = HL.4$observed[, 1],
+                       Obs1 = HL.4$observed[, 2],
+                       Exp0 = HL.4$expected[, 1],
+                       Exp1 = HL.4$expected[, 2]))
+
+ggplot(HL.df.4, aes(group, Obs0)) +
+  geom_line(linetype = "dashed", color = "red", size = 1) +
+  geom_line(aes(y = Obs1), linetype = "dashed", size = 1) +
+  geom_line(aes(y = Exp0), color = "red", size = 1) +
+  geom_line(aes(y = Exp1), size = 1) +
+  labs(title = "Model 4a: Observed and expected in each group",
+       caption = "solid = expected, dashed = observed, red = 0, black = 1",
+       y = "number of observations") +
+  scale_x_continuous(breaks = seq(1, 12)) +
+  theme(text = element_text(size = 14))
 
 
