@@ -1,7 +1,7 @@
 # Project 2
 
-#load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
-load("~/Desktop/LinLog/Project_1/Data/weather.rda")
+load( file = "/home/neko/RWTH/Master/Erasmus/Vorlesungen/LinLog/R/weather.rda")
+#load("~/Desktop/LinLog/Project_1/Data/weather.rda")
 
 weather$lowrain <- as.numeric(weather$rain < 25)
 
@@ -778,4 +778,48 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   # Show them as % with one decimal value:
   round(100*collect_AIC[, c("R2CS", "R2N")], digits = 1)
   
-  
+ #### Section 5 ####
+ #### 5a) ####
+ model_2b
+ model_3a
+ model_4a
+ 
+ pred.phat <- cbind(
+  weather,
+  p.2 = predict(model_2b, type = "response"),
+  p.3 = predict(model_3a, type = "response"),
+  p.4 = predict(model_4a, type = "response"))
+ head(pred.phat)
+ 
+# Confusion matrix for all models
+# Calculate Y-hat using all models
+
+pred.phat$yhat.2 <- as.numeric(pred.phat$p.2 > 0.5)
+pred.phat$yhat.3 <- as.numeric(pred.phat$p.3 > 0.5)
+pred.phat$yhat.4 <- as.numeric(pred.phat$p.4 > 0.5)
+
+(row.01 <- table(weather$lowrain))
+
+(col.01.2 <- table(pred.phat$yhat.2))
+(confusion.2 <- table(pred.phat$lowrain, pred.phat$yhat.2))
+(spec.2 <- confusion.2[1, 1] / row.01[1])
+(sens.2 <- confusion.2[2, 2] / row.01[2])
+(accu.2 <- sum(diag(confusion.2)) / sum(confusion.2))
+(prec.2 <- confusion.2[2, 2] / col.01.2[2])
+
+(col.01.3 <- table(pred.phat$yhat.3))
+(confusion.3 <- table(pred.phat$lowrain, pred.phat$yhat.3))
+(spec.3 <- confusion.3[1, 1] / row.01[1])
+(sens.3 <- confusion.3[2, 2] / row.01[2])
+(accu.3 <- sum(diag(confusion.3)) / sum(confusion.3))
+(prec.3 <- confusion.3[2, 2] / col.01.3[2])
+
+(col.01.4 <- table(pred.phat$yhat.4))
+(confusion.4 <- table(pred.phat$lowrain, pred.phat$yhat.4))
+(spec.4 <- confusion.4[1, 1] / row.01[1])
+(sens.4 <- confusion.4[2, 2] / row.01[2])
+(accu.4 <- sum(diag(confusion.4)) / sum(confusion.4))
+(prec.4 <- confusion.4[2, 2] / col.01.3[2])
+
+
+#### 5b) ####
