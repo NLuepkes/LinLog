@@ -678,41 +678,30 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
                size = 1) +
     geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
                size = 1) +
-    labs(title = "Standardized deviance residuals vs linear predictor",
-         color = "Y") +
     theme(text = element_text(size = 14))
   
-  
-  ggplot(model_4a.pred, aes(temp, devres, 
-                            color = as.factor(lowrain))) +
+  ggplot(model_4a.pred, aes(temp, devres)) +
     geom_point() +
     facet_wrap(~ location) +
-    # geom_point(aes(y = ????, color = pressure)) + scale_color_viridis_c()+
+    geom_point(aes(color = pressure)) + scale_color_viridis_c()+
     geom_hline(yintercept = 0) +
     geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
                size = 1) +
     geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
                size = 1) +
-    labs(title = "Standardized deviance residuals vs linear predictor",
-         color = "Y") +
     theme(text = element_text(size = 14))
   
-  
-  ggplot(model_4a.pred, aes(pressure, stdres, 
-                            color = as.factor(lowrain))) +
+  ggplot(model_4a.pred, aes(I(pressure-1012), devres)) +
     geom_point() +
     facet_wrap(~ location) +
-    # geom_point(aes(y = ????, color = temp)) + scale_color_viridis_c()+
+    geom_point(aes(color = temp)) + scale_color_viridis_c()+
     geom_hline(yintercept = 0) +
     geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
                size = 1) +
     geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
                size = 1) +
-    labs(title = "Standardized residuals vs linear predictor",
-         color = "Y") +
     theme(text = element_text(size = 14))
   
-# ----------------------------------------   Above is the problematic part
   
   ggplot(model_4a.pred, aes(xbeta, stdres^2, color = as.factor(lowrain))) +
     geom_point() +
@@ -730,7 +719,7 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
   
   I_highstdres4 <- which(model_4a.pred$stdres^2 > 20)
   
-  ggplot(model_4a.pred, aes(xbeta, devstd, color = as.factor(lowrain))) +
+  ggplot(model_4a.pred, aes(xbeta, devres, color = as.factor(lowrain))) +
     geom_point() +
     geom_point(data = model_4a.pred[I_highstdres4, ], size = 3, 
                color = "red", shape = 24) +
@@ -743,7 +732,7 @@ ggplot(model_4a.pred, aes(temp, lowrain)) +
          color = "Y") +
     theme(text = element_text(size = 14))
   
-  ggplot(model_4a.pred, aes( I(pressure - 1012), devstd, color = as.factor(lowrain))) +
+  ggplot(model_4a.pred, aes( I(pressure - 1012), devres, color = as.factor(lowrain))) +
     geom_point() +
     geom_point(data = model_4a.pred[I_highstdres4, ], size = 3, 
                color = "red", shape = 24)+
