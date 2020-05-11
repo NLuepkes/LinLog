@@ -946,11 +946,11 @@ ggplot(roc.df, aes(specificity, sensitivity,
   labs(title = "ROC-curves for all the models") +
   theme(text = element_text(size = 14))
 
-# AUC####
+# AUC
 roc.3
 auc(roc.3)
 # Confidence interval for AUC
-(ci.3 <- ci(roc.3))
+(ci.3 <- ci(roc.4))
 # lower limit:
 ci.3[1]
 # AUC:
@@ -1060,7 +1060,7 @@ ggplot(pred.sort, aes(rank, p.3)) +
        x = "(i) = 1,...,n", y = "p-hat") +
   theme(text = element_text(size = 14))
 
-# HL by hand####
+# HL by hand
 # The following can be done using the output of the
 # hoslem.test function, see below.
 # I do is here to illustrate the steps.
@@ -1137,9 +1137,12 @@ ggplot(HL.df.3, aes(group, Obs0)) +
        y = "number of observations") +
   scale_x_continuous(breaks = seq(1, 11)) +
   theme(text = element_text(size = 14))
+  
 # ------------------------ Model 3, short version
-
-group_3 <- 5
+# g = 15 is good for mean = 5, p-value = 8.672e-07
+# but the plot looks horrible
+# g = 9 is good for the plot, but mean = 12.7. p-value = 2.587e-08
+group_3 <- 15
 length(model_3a$coefficients)
 (HL.3 <- hoslem.test(pred.sort$lowrain, pred.sort$p.3, 
                         g = group_3))
@@ -1166,12 +1169,15 @@ ggplot(HL.df.3, aes(group, Obs0)) +
   
 
 # ------------------------- Do the same for model 2b:
+# g = 28 gives mean = 5.1 and p-value = 0.2973. The plot looks so so.
+# g = 10 gives mean = 15.05, p-value = 0.213. The plot looks a lot smoother and still ok.
+group_2 <- 28
 length(model_2b$coefficients)
 (HL.2 <- hoslem.test(pred.sort$lowrain, pred.sort$p.2, 
-                        g = 7))
+                        g = group_2))
 HL.2$expected
 
-(HL.df.2 <- data.frame(group = seq(1, 7),
+(HL.df.2 <- data.frame(group = seq(1, group_2),
                      Obs0 = HL.2$observed[, 1],
                      Obs1 = HL.2$observed[, 2],
                      Exp0 = HL.2$expected[, 1],
@@ -1187,15 +1193,18 @@ ggplot(HL.df.2, aes(group, Obs0)) +
   labs(title = "Model 2b: Observed and expected in each group",
        caption = "solid = expected, dashed = observed, red = 0, black = 1",
        y = "number of observations") +
-  scale_x_continuous(breaks = seq(1, 10)) +
+  scale_x_continuous(breaks = seq(1, group_2)) +
   theme(text = element_text(size = 14))
   
 
-# ------------------------------ And for model 1:
-
-(HL.4 <- hoslem.test(pred.sort$lowrain, pred.sort$p.4, g = 8))
+# ------------------------------ And for model 4:
+# p-value = 0.1496 => not significantly bad
+# g = 8 is best with mean = 4.429233
+# g = 14: mean = 1.71, p-value = 0.5978
+group_4 <- 8
+(HL.4 <- hoslem.test(pred.sort$lowrain, pred.sort$p.4, g = group_4))
 HL.4$expected
-(HL.df.4 <- data.frame(group = seq(1, 11),
+(HL.df.4 <- data.frame(group = seq(1, group_4),
                        Obs0 = HL.4$observed[, 1],
                        Obs1 = HL.4$observed[, 2],
                        Exp0 = HL.4$expected[, 1],
@@ -1209,10 +1218,8 @@ ggplot(HL.df.4, aes(group, Obs0)) +
   labs(title = "Model 4a: Observed and expected in each group",
        caption = "solid = expected, dashed = observed, red = 0, black = 1",
        y = "number of observations") +
-  scale_x_continuous(breaks = seq(1, 12)) +
+  scale_x_continuous(breaks = seq(1, group_4)) +
   theme(text = element_text(size = 14))
-
-# p-value = 0.1496 => not significantly bad
 
 
 # ----
