@@ -185,7 +185,8 @@ ggplot(model_2b.pred, aes(temp, v)) +
   geom_point() +
   geom_point(data = model_2b.pred[I_highv, ], size = 3, 
              color = "red", shape = 24) +
-  facet_wrap(~ location) +
+
+facet_wrap(~ location) +
   labs(title = "Leverage vs temp",
        caption = "blue = 2(p+1)/n and  1/n") +
   geom_hline(yintercept = 1/1091, color = "blue", linetype = "dotted", size = 1) +
