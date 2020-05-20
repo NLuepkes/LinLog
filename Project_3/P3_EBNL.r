@@ -149,6 +149,7 @@ ggplot(mod_nb.pred, aes(xbeta, devstd, color = as.factor(late))) +
   theme(text = element_text(size = 14)) 
   
   
+  
   mod_nb.pred <- cbind(
   fhm.data,
   mhat = predict(mod_nb, type = "response"))
@@ -190,9 +191,12 @@ ggplot(mod_nb.pred, aes(xbeta, devstd, color = as.factor(late))) +
   
   # residual analysis for both nb and po
 #### now look at Östergötland ####
-I_og <- which(fhm.data$region == "Östergötland")
-  
-fhm.og <- fhm.data[I_og,]
+# different encodings for 'ö' make the == 'Östergötland' unusable, so we pick its name manually
+fhm.my_og <- fhm.data[706,]
+my_og <- fhm.my_og$region
+I_og <- which(fhm.data$region == my_og)
+
+fhm.data.og <- fhm.data[I_og,]
 
 ggplot(data = fhm.data.og, 
                       aes(x = obs_date, y = new_cases)) + 
