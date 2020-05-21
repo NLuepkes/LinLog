@@ -38,7 +38,8 @@ fhm.data$region <- relevel(fhm.data$region, "Västra Götaland") #see summary
     theme(text = element_text(size = 16))+
     facet_wrap(~ region)   
     
-#### 1a) ####    
+#### 1a) ####
+# TODO: assign the same label through out the same region
 fhm.data$late <- as.numeric(fhm.data$day_nbr > 10) 
 
 summary(fhm.data)
@@ -144,10 +145,14 @@ ggplot(mod_nb.pred, aes(xbeta, devstd, color = as.factor(late))) +
              size = 1) +
   geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
              size = 1) +
-  labs(title = "Standardized deviance residuals vs negative bin predictor",
-       color = "Y") +
-  theme(text = element_text(size = 14)) 
+  labs(color = "Y") +
+  theme(text = element_text(size = 14)) +
+    facet_wrap(~ region)
+  # we only have six regions with early onsets and their leverages are very high. 
+  # This might be due to the fact that because the majority of the regions are late in onset, the model sees that more often.
   
+  # TODO: cook's D
+  # Is there a way to compare two different models that are completey different? Compare regular residuals? Max resisdulas?
   
   
   mod_nb.pred <- cbind(
@@ -190,6 +195,10 @@ ggplot(mod_nb.pred, aes(xbeta, devstd, color = as.factor(late))) +
   facet_wrap(~ region)
   
   # residual analysis for both nb and po
+  
+  
+  
+  
 #### now look at Östergötland ####
 # different encodings for 'ö' make the == 'Östergötland' unusable, so we pick its name manually
 fhm.my_og <- fhm.data[706,]
@@ -206,7 +215,20 @@ ggplot(data = fhm.data.og,
     labs(title = "OG")+
     theme(text = element_text(size = 16))
 
-
+#fhm.data.og <- fhm.data.og[3,] #the first two data points are zero
   
-mod_nb.og <- glm(new_cases ~ (day_nbr), family="binomial", data = fhm.data.og)
-mod_po.og <- glm(new_cases ~ (day_nbr_region)*(day_nbr), offset(log(population)), data = fhm.data.og, family=poisson)
+mod_nb.og <- lm(new_cases ~ day_nbr + I(3*day_nbr^2) , data = fhm.data.og)
+mod_po.og <- glm(new_cases ~ (day_nbr_region)*(day_nbr), data = fhm.data.og, family="poisson")
+
+mod_nb.og.pred <- cbind(
+  fhm.data.og,
+  mhat = predict(mod_nb.og, type = "response"))
+  
+ggplot(mod_nb.og.pred, aes(day_nbr, new_cases)) +
+  geom_point() +
+  geom_line(aes(y = mhat)) +
+  labs(title = "negative bin predictor",
+       color = "Y") +
+  theme(text = element_text(size = 14)) 
+
+# it's not done yet, but we leave it
