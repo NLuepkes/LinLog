@@ -127,7 +127,8 @@ step(mod_po, k=log(nrow(fhm.data)))
 infl.fhm <- influence(mod_nb)
 mod_nb.pred <- cbind(fhm.data,
                    xbeta = predict(mod_nb),
-                   v = infl.fhm$hat)
+                   v = infl.fhm$hat,
+                   phat = predict(mod_nb, type="response"))
 
 # deviance residuals 
 mod_nb.pred$devres <- infl.fhm$dev.res
@@ -151,13 +152,83 @@ ggplot(mod_nb.pred, aes(xbeta, devstd, color = as.factor(late))) +
   # we only have six regions with early onsets and their leverages are very high. 
   # This might be due to the fact that because the majority of the regions are late in onset, the model sees that more often.
   
-  # TODO: cook's D
+  # one examplary plot for this beaviour:
+  I_stk <- which(mod_nb.pred$region == "Stockholm")
+  mod_nb.pred.stk <- mod_nb.pred[I_stk,]
+  ggplot(mod_nb.pred.stk, aes(xbeta, devstd, color = as.factor(late))) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = c(-2, 2), color = "red", linetype = "dashed",
+             size = 1) +
+  geom_hline(yintercept = c(-4, 4), color = "red", linetype = "dotted",
+             size = 1) +
+  labs(color = "Y") +
+  theme(text = element_text(size = 14))
+  
+  # possible TODO 
+  # cook's D
+  # ROC
+  # R^2
   # Is there a way to compare two different models that are completey different? Compare regular residuals? Max resisdulas?
   
+  mod_po.pred <- cbind(fhm.data,
+                   xbeta = predict(mod_po),
+                   v = influence(mod_po)$hat,
+                   phat = predict(mod_po, type="response"))
   
+  # ROC
+  library(pROC)
+  mod_nb.roc <- roc(new_cases ~ phat, data = mod_nb.pred)
+  mod_nb.roc.df <- coords(mod_nb.roc, transpose = FALSE)
+  mod_nb.roc.df$model <- "nb"
+  mod_po.roc <- roc(new_cases ~ phat, data = mod_po.pred)
+  mod_po.roc.df <- coords(mod_po.roc, transpose = FALSE)
+  mod_po.roc.df$model <- "po"
+  
+  
+  ggroc(mod_nb.roc) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  coord_fixed() +
+  labs(title = "ROC-curve for model nb")
+  
+  ggroc(mod_po.roc) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed") +
+  coord_fixed() +
+  labs(title = "ROC-curve for model po")
+  
+  roc.df.ideal <- data.frame(sensitivity = c(0, 1, 1),
+                           specificity = c(1, 1, 0),
+                           threshold = c(NA, NA, NA))
+roc.df.ideal$model <- "ideal"
+
+roc.df.line <- data.frame(sensitivity = c(0, 0.5, 1),
+                           specificity = c(1, 0.5, 0),
+                           threshold = c(NA, NA, NA))
+roc.df.line$model <- "line"
+  
+  roc.df <- rbind(mod_po.roc.df, mod_nb.roc.df, roc.df.ideal, roc.df.line)
+# Plot all the curves, in different colors:
+ggplot(roc.df, aes(specificity, sensitivity,
+                            color = model)) +
+  geom_path(size = 1) +
+  coord_fixed() +       # square plotting area
+  scale_x_reverse() +   # Reverse scale on the x-axis!
+  labs(title = "ROC-curves for all the models") +
+  theme(text = element_text(size = 14))
+
+  
+  # AUC
+  # Compare the AUC for the models:
+
+roc.test(mod_po.roc, mod_nb.roc)
+# AUC of roc1 AUC of roc2 
+#  0.5932225   0.6014123
+
+  #### see how well our models work
   mod_nb.pred <- cbind(
   fhm.data,
   mhat = predict(mod_nb, type = "response"))
+
 
   ggplot(mod_nb.pred, aes(day_nbr, new_cases, color = as.factor(late))) +
   geom_point() +
@@ -214,6 +285,17 @@ ggplot(data = fhm.data.og,
     ylab("new cases")+
     labs(title = "OG")+
     theme(text = element_text(size = 16))
+ 
+mod_nb.pred.og <- mod_nb.pred[I_og,]
+    
+ggplot(mod_nb.pred.og, aes(day_nbr, new_cases, color = as.factor(late))) +
+  geom_point() +
+  #geom_point(data = mod_nb.pred[I_late, ], size = 3, 
+  #           color = "red", shape = 24) +
+  geom_line(aes(y = mhat)) +
+  labs(color = "late") +
+  theme(text = element_text(size = 14)) +
+  facet_wrap(~ region)    
 
 #fhm.data.og <- fhm.data.og[3,] #the first two data points are zero
   
@@ -230,5 +312,15 @@ ggplot(mod_nb.og.pred, aes(day_nbr, new_cases)) +
   labs(title = "negative bin predictor",
        color = "Y") +
   theme(text = element_text(size = 14)) 
+  
+  
+  
+library(fitdistrplus)
+FIT <- fitdist(fhm.data.og$new_cases, "norm")    ## note: it is "norm" not "normal"
+class(FIT)
+# [1] "fitdist"
+
+plot(FIT)    ## use method `plot.fitdist`
+
 
 # it's not done yet, but we leave it
